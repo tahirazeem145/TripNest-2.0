@@ -9,6 +9,7 @@ com\tripnest\dto\JourneyResponse.class
 com\tripnest\dto\SignupRequest.class
 com\tripnest\service\SocialService$3.class
 com\tripnest\controller\SocialController.class
+com\tripnest\dto\CommentRequest.class
 com\tripnest\config\CorsConfig.class
 com\tripnest\service\JourneyService$1.class
 com\tripnest\exception\GlobalExceptionHandler.class
@@ -30,6 +31,7 @@ com\tripnest\service\SocialService$18.class
 com\tripnest\service\SocialService$2.class
 com\tripnest\service\JourneyService$3.class
 com\tripnest\service\SocialService$14.class
+com\tripnest\dto\ProfileUpdateRequest.class
 com\tripnest\dto\LoginRequest.class
 com\tripnest\service\SocialService$5.class
 com\tripnest\service\SocialService$8.class
@@ -43,6 +45,7 @@ com\tripnest\service\SocialService$12.class
 com\tripnest\config\CorsConfig$1.class
 com\tripnest\service\SocialService.class
 com\tripnest\dto\PostRequest.class
+com\tripnest\config\RestTemplateConfig.class
 com\tripnest\dto\AuthResponse.class
 com\tripnest\service\JourneyService$5.class
 com\tripnest\service\SocialService$15.class

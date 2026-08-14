@@ -1,4 +1,5 @@
 E:\TripNest 2.0\backend\src\main\java\com\tripnest\dto\PostRequest.java
+E:\TripNest 2.0\backend\src\main\java\com\tripnest\dto\CommentRequest.java
 E:\TripNest 2.0\backend\src\main\java\com\tripnest\dto\NotificationDto.java
 E:\TripNest 2.0\backend\src\main\java\com\tripnest\exception\GlobalExceptionHandler.java
 E:\TripNest 2.0\backend\src\main\java\com\tripnest\config\CorsConfig.java
@@ -15,6 +16,7 @@ E:\TripNest 2.0\backend\src\main\java\com\tripnest\exception\UnauthorizedExcepti
 E:\TripNest 2.0\backend\src\main\java\com\tripnest\service\JourneyService.java
 E:\TripNest 2.0\backend\src\main\java\com\tripnest\dto\JourneyResponse.java
 E:\TripNest 2.0\backend\src\main\java\com\tripnest\dto\ErrorResponse.java
+E:\TripNest 2.0\backend\src\main\java\com\tripnest\dto\ProfileUpdateRequest.java
 E:\TripNest 2.0\backend\src\main\java\com\tripnest\service\SocialService.java
 E:\TripNest 2.0\backend\src\main\java\com\tripnest\dto\PostResponse.java
 E:\TripNest 2.0\backend\src\main\java\com\tripnest\dto\CommentDto.java
@@ -23,3 +25,4 @@ E:\TripNest 2.0\backend\src\main\java\com\tripnest\dto\UserDto.java
 E:\TripNest 2.0\backend\src\main\java\com\tripnest\dto\LoginRequest.java
 E:\TripNest 2.0\backend\src\main\java\com\tripnest\exception\ResourceNotFoundException.java
 E:\TripNest 2.0\backend\src\main\java\com\tripnest\config\SupabaseConfigValidator.java
+E:\TripNest 2.0\backend\src\main\java\com\tripnest\config\RestTemplateConfig.java

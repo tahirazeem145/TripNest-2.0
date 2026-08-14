@@ -98,8 +98,11 @@ public class SocialController {
     public ResponseEntity<CommentDto> addComment(
             @RequestHeader(value = "Authorization", required = false) String authHeader,
             @PathVariable String id,
-            @RequestBody Map<String, String> body) {
-        String content = body.getOrDefault("content", "");
+            @RequestBody CommentRequest body) {
+        String content = (body != null && body.getContent() != null) ? body.getContent().trim() : "";
+        if (content.isEmpty()) {
+            throw new IllegalArgumentException("Comment content cannot be empty.");
+        }
         CommentDto comment = socialService.addComment(authHeader, id, content);
         return ResponseEntity.status(HttpStatus.CREATED).body(comment);
     }
@@ -149,7 +152,7 @@ public class SocialController {
     @PutMapping("/profile/me")
     public ResponseEntity<TravelerDto> updateProfile(
             @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestBody Map<String, String> updates) {
+            @RequestBody ProfileUpdateRequest updates) {
         return ResponseEntity.ok(socialService.updateProfile(authHeader, updates));
     }
 

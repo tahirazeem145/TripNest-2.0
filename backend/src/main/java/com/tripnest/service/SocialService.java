@@ -29,11 +29,12 @@ public class SocialService {
     private String supabaseAnonKey;
 
     private final AuthService authService;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public SocialService(AuthService authService) {
+    public SocialService(AuthService authService, RestTemplate restTemplate) {
         this.authService = authService;
+        this.restTemplate = restTemplate;
     }
 
     /**
@@ -343,18 +344,22 @@ public class SocialService {
                 comment.setAuthor(currentUser);
 
                 // Notify post owner
-                PostResponse post = getPostById(authHeader, postId);
-                if (!post.getUserId().equals(currentUser.getId())) {
-                    createNotification(authHeader, post.getUserId(), currentUser.getId(), "comment", postId);
-                }
+                try {
+                    PostResponse post = getPostById(authHeader, postId);
+                    if (!post.getUserId().equals(currentUser.getId())) {
+                        createNotification(authHeader, post.getUserId(), currentUser.getId(), "comment", postId);
+                    }
+                } catch (Exception ignored) {}
 
                 return comment;
             }
             throw new RuntimeException("Failed to add comment.");
         } catch (HttpClientErrorException e) {
+            logger.error("[COMMENTS] Error adding comment: status={}, body={}", e.getStatusCode(), e.getResponseBodyAsString());
             handleRestError(e);
-            throw new RuntimeException("Failed to add comment.");
+            throw new RuntimeException("Failed to add comment: " + e.getResponseBodyAsString());
         } catch (Exception e) {
+            logger.error("[COMMENTS] Unexpected error: {}", e.getMessage(), e);
             if (e instanceof RuntimeException && !(e instanceof HttpClientErrorException)) {
                 throw (RuntimeException) e;
             }
@@ -384,9 +389,11 @@ public class SocialService {
 
             return comments;
         } catch (HttpClientErrorException e) {
+            logger.error("[COMMENTS] Error fetching comments: status={}, body={}", e.getStatusCode(), e.getResponseBodyAsString());
             handleRestError(e);
             throw new RuntimeException("Failed to fetch comments.");
         } catch (Exception e) {
+            logger.error("[COMMENTS] Unexpected error fetching comments: {}", e.getMessage(), e);
             if (e instanceof RuntimeException && !(e instanceof HttpClientErrorException)) {
                 throw (RuntimeException) e;
             }
@@ -533,7 +540,9 @@ public class SocialService {
 
         try {
             restTemplate.exchange(url, HttpMethod.PATCH, entity, String.class);
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            logger.warn("[NOTIFICATIONS] Failed to mark notifications read: {}", e.getMessage());
+        }
     }
 
     /**
@@ -601,7 +610,7 @@ public class SocialService {
     /**
      * Update Current User Profile
      */
-    public TravelerDto updateProfile(String authHeader, Map<String, String> updates) {
+    public TravelerDto updateProfile(String authHeader, ProfileUpdateRequest request) {
         UserDto currentUser = extractAuthenticatedUser(authHeader);
 
         String url = supabaseUrl + "/rest/v1/profiles?id=eq." + currentUser.getId();
@@ -609,9 +618,11 @@ public class SocialService {
         headers.set("Prefer", "return=representation");
 
         Map<String, Object> body = new HashMap<>();
-        if (updates.containsKey("fullName")) body.put("full_name", updates.get("fullName"));
-        if (updates.containsKey("bio")) body.put("bio", updates.get("bio"));
-        if (updates.containsKey("avatarUrl")) body.put("avatar_url", updates.get("avatarUrl"));
+        if (request != null) {
+            if (request.getFullName() != null) body.put("full_name", request.getFullName());
+            if (request.getBio() != null) body.put("bio", request.getBio());
+            if (request.getAvatarUrl() != null) body.put("avatar_url", request.getAvatarUrl());
+        }
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
@@ -619,9 +630,11 @@ public class SocialService {
             restTemplate.exchange(url, HttpMethod.PATCH, entity, String.class);
             return getTravelerProfile(authHeader, currentUser.getId());
         } catch (HttpClientErrorException e) {
+            logger.error("[PROFILE] Error updating profile: status={}, body={}", e.getStatusCode(), e.getResponseBodyAsString());
             handleRestError(e);
             throw new RuntimeException("Failed to update profile.");
         } catch (Exception e) {
+            logger.error("[PROFILE] Unexpected error updating profile: {}", e.getMessage(), e);
             if (e instanceof RuntimeException && !(e instanceof HttpClientErrorException)) {
                 throw (RuntimeException) e;
             }

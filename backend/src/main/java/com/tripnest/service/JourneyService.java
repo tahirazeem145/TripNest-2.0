@@ -29,11 +29,12 @@ public class JourneyService {
     private String supabaseAnonKey;
 
     private final AuthService authService;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public JourneyService(AuthService authService) {
+    public JourneyService(AuthService authService, RestTemplate restTemplate) {
         this.authService = authService;
+        this.restTemplate = restTemplate;
     }
 
     /**

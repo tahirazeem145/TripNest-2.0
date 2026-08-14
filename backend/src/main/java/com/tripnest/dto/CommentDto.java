@@ -1,7 +1,9 @@
 package com.tripnest.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CommentDto {
     private String id;
 
@@ -15,6 +17,9 @@ public class CommentDto {
 
     @JsonProperty("created_at")
     private String createdAt;
+
+    @JsonProperty("updated_at")
+    private String updatedAt;
 
     private UserDto author;
 
@@ -34,6 +39,9 @@ public class CommentDto {
 
     public String getCreatedAt() { return createdAt; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+
+    public String getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(String updatedAt) { this.updatedAt = updatedAt; }
 
     public UserDto getAuthor() { return author; }
     public void setAuthor(UserDto author) { this.author = author; }
