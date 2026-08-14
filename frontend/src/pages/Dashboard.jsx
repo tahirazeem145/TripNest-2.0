@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 function Dashboard() {
@@ -40,8 +41,18 @@ function Dashboard() {
           </div>
           <h1 className="fw-bold text-dark mb-2">Welcome to TripNest 2.0</h1>
           <p className="lead text-secondary mb-4">
-            Hello, <strong>{user?.fullName || user?.email}</strong>! Real authentication is active.
+            Hello, <strong>{user?.fullName || user?.email}</strong>! Real authentication & Journey management active.
           </p>
+
+          {/* Dashboard Navigation Actions */}
+          <div className="d-flex flex-wrap align-items-center justify-content-center gap-3 mb-4">
+            <Link to="/my-journeys" className="btn btn-primary rounded-3 px-4 py-3 fw-semibold">
+              <i className="bi bi-journal-text me-2"></i> My Journeys
+            </Link>
+            <Link to="/create-journey" className="btn btn-outline-secondary rounded-3 px-4 py-3 fw-semibold">
+              <i className="bi bi-plus-circle me-2"></i> Create Journey
+            </Link>
+          </div>
 
           <div className="row g-3 justify-content-center text-start mt-2" style={{ maxWidth: '600px', margin: '0 auto' }}>
             <div className="col-12">

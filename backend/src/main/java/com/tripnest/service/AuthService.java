@@ -27,6 +27,8 @@ public class AuthService {
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AuthService.class);
+
     /**
      * Sign up a new user with Supabase Auth.
      */
@@ -46,6 +48,7 @@ public class AuthService {
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
         try {
+            logger.info("[AUTH] Attempting Supabase Auth signup for email domain: {}", getEmailDomain(request.getEmail()));
             ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
             JsonNode root = objectMapper.readTree(response.getBody());
 
@@ -57,6 +60,8 @@ public class AuthService {
             UserDto userDto = new UserDto(userId, request.getEmail(), request.getFullName(), null);
             String token = root.has("access_token") ? root.get("access_token").asText() : null;
 
+            logger.info("[AUTH] Supabase Auth signup successful for user ID: {}", userId);
+
             return new AuthResponse(
                 true,
                 "Account registered successfully! You can now sign in.",
@@ -64,11 +69,21 @@ public class AuthService {
                 userDto
             );
         } catch (HttpClientErrorException e) {
-            String sanitizedMessage = parseSupabaseError(e.getResponseBodyAsString(), "Registration failed. Please check your details.");
+            String errorResponseBody = e.getResponseBodyAsString();
+            logger.warn("[AUTH] Supabase Auth signup returned HTTP {}: {}", e.getStatusCode(), errorResponseBody);
+            String sanitizedMessage = parseSupabaseError(errorResponseBody, "Registration failed. Please check your details.");
             throw new RuntimeException(sanitizedMessage);
         } catch (Exception e) {
+            logger.error("[AUTH] Unexpected error during signup", e);
             throw new RuntimeException("Unable to complete signup request. Please check Supabase service status.");
         }
+    }
+
+    private String getEmailDomain(String email) {
+        if (email != null && email.contains("@")) {
+            return "***@" + email.split("@")[1];
+        }
+        return "invalid-email";
     }
 
     /**
