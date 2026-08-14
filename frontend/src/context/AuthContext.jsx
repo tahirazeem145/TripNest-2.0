@@ -36,8 +36,20 @@ export function AuthProvider({ children }) {
       // Demo/dev session storage
       localStorage.setItem('tripnest_token', res.accessToken);
       setToken(res.accessToken);
+      
+      // Ensure user object is loaded and state is updated immediately
+      let userData = res.user;
+      if (!userData) {
+        try {
+          userData = await authService.getCurrentUser(res.accessToken);
+        } catch (err) {
+          console.warn('[AuthContext] Could not fetch current user on login:', err);
+        }
+      }
+      setUser(userData);
+    } else {
+      setUser(res.user);
     }
-    setUser(res.user);
     return res;
   };
 

@@ -15,21 +15,21 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 -- 2. Enable Row Level Security (RLS)
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
--- 3. Define Security Policies
--- Policy: Users can read their own profile
+-- 3. Define Security Policies (Idempotent: drop policy if exists before creation)
+DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
 CREATE POLICY "Users can view own profile" 
 ON public.profiles 
 FOR SELECT 
 USING (auth.uid() = id);
 
--- Policy: Users can update their own profile
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 CREATE POLICY "Users can update own profile" 
 ON public.profiles 
 FOR UPDATE 
 USING (auth.uid() = id);
 
--- Policy: Service role or trigger inserts profile automatically on signup
-CREATE POLICY "System can insert profiles on signup" 
+DROP POLICY IF EXISTS "System trigger can insert profile" ON public.profiles;
+CREATE POLICY "System trigger can insert profile" 
 ON public.profiles 
 FOR INSERT 
 WITH CHECK (true);
@@ -46,7 +46,12 @@ BEGIN
     NEW.email, 
     COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'fullName', SPLIT_PART(NEW.email, '@', 1)),
     NEW.raw_user_meta_data->>'avatar_url'
-  );
+  )
+  ON CONFLICT (id) DO UPDATE SET
+    email = EXCLUDED.email,
+    full_name = EXCLUDED.full_name,
+    avatar_url = EXCLUDED.avatar_url,
+    updated_at = NOW();
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
