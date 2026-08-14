@@ -1,0 +1,10 @@
+E:\TripNest 2.0\backend\src\main\java\com\tripnest\controller\AuthController.java
+E:\TripNest 2.0\backend\src\main\java\com\tripnest\service\AuthService.java
+E:\TripNest 2.0\backend\src\main\java\com\tripnest\dto\LoginRequest.java
+E:\TripNest 2.0\backend\src\main\java\com\tripnest\dto\ErrorResponse.java
+E:\TripNest 2.0\backend\src\main\java\com\tripnest\TripNestApplication.java
+E:\TripNest 2.0\backend\src\main\java\com\tripnest\exception\GlobalExceptionHandler.java
+E:\TripNest 2.0\backend\src\main\java\com\tripnest\config\CorsConfig.java
+E:\TripNest 2.0\backend\src\main\java\com\tripnest\dto\AuthResponse.java
+E:\TripNest 2.0\backend\src\main\java\com\tripnest\dto\SignupRequest.java
+E:\TripNest 2.0\backend\src\main\java\com\tripnest\dto\UserDto.java

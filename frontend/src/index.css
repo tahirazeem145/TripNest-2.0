@@ -1,0 +1,168 @@
+/* Import a premium modern travel font */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --tn-font: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  
+  /* Travel-inspired color palette */
+  --tn-primary: #0284c7;        /* Sky travel blue */
+  --tn-primary-hover: #0369a1;  /* Darker sky blue */
+  --tn-teal: #0d9488;           /* Lagoon teal accent */
+  --tn-teal-light: #ccfbf1;
+  --tn-bg-light: #f8fafc;       /* Ultra soft gray background */
+  --tn-dark: #0f172a;           /* Deep slate navy */
+  --tn-border: #e2e8f0;
+}
+
+body {
+  font-family: var(--tn-font);
+  background-color: var(--tn-bg-light);
+  color: var(--tn-dark);
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom layout helpers */
+.bg-light-gray {
+  background-color: var(--tn-bg-light);
+}
+
+.text-teal {
+  color: var(--tn-teal) !important;
+}
+
+.text-light-teal {
+  color: var(--tn-teal-light) !important;
+}
+
+/* Visual left panel styling */
+.relative-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.visual-side {
+  height: 100vh;
+  position: relative;
+  z-index: 2;
+  transition: transform 0.8s ease-in-out;
+}
+
+/* Premium Card Styles */
+.login-card, .style-card {
+  border: 1px solid var(--tn-border);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.login-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Form Input Enhancements */
+.form-control {
+  border: 1px solid var(--tn-border);
+  font-family: var(--tn-font);
+  font-size: 0.95rem;
+  color: var(--tn-dark);
+  transition: all 0.2s ease-in-out;
+}
+
+.form-control:focus {
+  border-color: var(--tn-primary);
+  box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.12);
+  color: var(--tn-dark);
+}
+
+/* Button & Anchor Customizations */
+.btn-primary {
+  background-color: var(--tn-primary);
+  border-color: var(--tn-primary);
+  font-family: var(--tn-font);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active {
+  background-color: var(--tn-primary-hover) !important;
+  border-color: var(--tn-primary-hover) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2) !important;
+}
+
+.btn-outline-secondary {
+  border-color: var(--tn-border);
+  color: var(--tn-dark);
+  transition: all 0.2s ease;
+}
+
+.btn-outline-secondary:hover {
+  background-color: var(--tn-bg-light) !important;
+  border-color: #cbd5e1 !important;
+  color: var(--tn-dark) !important;
+  transform: translateY(-1px);
+}
+
+/* Focus and hover micro-animations */
+.hover-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.hover-effect:active {
+  transform: scale(0.98);
+}
+
+/* Brand typography styles */
+.brand-logo {
+  font-family: var(--tn-font);
+  font-weight: 800 !important;
+  letter-spacing: -0.5px;
+}
+
+.brand-logo-light {
+  font-family: var(--tn-font);
+  font-weight: 800 !important;
+  letter-spacing: -0.5px;
+  color: #ffffff;
+}
+
+/* Accessibly styled password toggle button */
+button[aria-label="Show password"],
+button[aria-label="Hide password"] {
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+  transition: background-color 0.2s ease;
+}
+
+button[aria-label="Show password"]:focus,
+button[aria-label="Hide password"]:focus {
+  background-color: rgba(0, 0, 0, 0.05);
+  box-shadow: none;
+}
+
+/* Accessibility outline overrides */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--tn-primary) !important;
+  outline-offset: 2px;
+}
+
+/* Custom scrollbar styling for form panels */
+.scrollable-y {
+  overflow-y: auto;
+  max-height: 100vh;
+}
+
+@media (max-width: 991.98px) {
+  .scrollable-y {
+    max-height: none;
+    overflow-y: visible;
+  }
+}
