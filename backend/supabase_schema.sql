@@ -68,61 +68,7 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- ====================================================================
--- 5. Journeys Table & Constraints
--- ====================================================================
-
-CREATE TABLE IF NOT EXISTS public.journeys (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    title TEXT NOT NULL CHECK (char_length(trim(title)) > 0),
-    destination TEXT NOT NULL CHECK (char_length(trim(destination)) > 0),
-    description TEXT,
-    start_date DATE NOT NULL,
-    end_date DATE NOT NULL,
-    cover_image_url TEXT,
-    travel_type TEXT,
-    budget NUMERIC(12,2) CHECK (budget IS NULL OR budget >= 0),
-    travelers INTEGER DEFAULT 1 CHECK (travelers >= 1),
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
-    CONSTRAINT chk_dates CHECK (end_date >= start_date)
-);
-
--- Enable RLS on Journeys
-ALTER TABLE public.journeys ENABLE ROW LEVEL SECURITY;
-
--- 6. Journeys RLS Policies
-DROP POLICY IF EXISTS "Authenticated users can view journeys" ON public.journeys;
-CREATE POLICY "Authenticated users can view journeys"
-ON public.journeys
-FOR SELECT
-TO authenticated
-USING (true);
-
-DROP POLICY IF EXISTS "Users can create journeys for themselves" ON public.journeys;
-CREATE POLICY "Users can create journeys for themselves"
-ON public.journeys
-FOR INSERT
-TO authenticated
-WITH CHECK (auth.uid() = user_id);
-
-DROP POLICY IF EXISTS "Users can update own journeys" ON public.journeys;
-CREATE POLICY "Users can update own journeys"
-ON public.journeys
-FOR UPDATE
-TO authenticated
-USING (auth.uid() = user_id)
-WITH CHECK (auth.uid() = user_id);
-
-DROP POLICY IF EXISTS "Users can delete own journeys" ON public.journeys;
-CREATE POLICY "Users can delete own journeys"
-ON public.journeys
-FOR DELETE
-TO authenticated
-USING (auth.uid() = user_id);
-
--- 7. Automatic updated_at Trigger for Journeys
+-- Automatic updated_at Trigger Function
 CREATE OR REPLACE FUNCTION public.handle_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -131,20 +77,14 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS set_journeys_updated_at ON public.journeys;
-CREATE TRIGGER set_journeys_updated_at
-  BEFORE UPDATE ON public.journeys
-  FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
-
 -- ====================================================================
--- 8. Phase 4: Travel Social Platform Tables & Policies
+-- 5. Travel Social Platform Tables & Policies
 -- ====================================================================
 
--- 8.1 POSTS TABLE
+-- 5.1 POSTS TABLE
 CREATE TABLE IF NOT EXISTS public.posts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    journey_id UUID REFERENCES public.journeys(id) ON DELETE SET NULL,
     image_url TEXT NOT NULL,
     caption TEXT,
     destination TEXT,
@@ -188,7 +128,52 @@ CREATE TRIGGER set_posts_updated_at
   BEFORE UPDATE ON public.posts
   FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
--- 8.2 FOLLOWS TABLE
+-- 5.1.1 POST MEDIA TABLE (Multi-Image Support)
+CREATE TABLE IF NOT EXISTS public.post_media (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    post_id UUID NOT NULL REFERENCES public.posts(id) ON DELETE CASCADE,
+    media_url TEXT NOT NULL,
+    media_type TEXT DEFAULT 'image',
+    display_order INT DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.post_media ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Authenticated users can view post media" ON public.post_media;
+CREATE POLICY "Authenticated users can view post media"
+ON public.post_media
+FOR SELECT
+TO authenticated
+USING (true);
+
+DROP POLICY IF EXISTS "Users can insert post media for own posts" ON public.post_media;
+CREATE POLICY "Users can insert post media for own posts"
+ON public.post_media
+FOR INSERT
+TO authenticated
+WITH CHECK (
+    EXISTS (
+        SELECT 1 FROM public.posts 
+        WHERE public.posts.id = post_media.post_id 
+        AND public.posts.user_id = auth.uid()
+    )
+);
+
+DROP POLICY IF EXISTS "Users can delete post media for own posts" ON public.post_media;
+CREATE POLICY "Users can delete post media for own posts"
+ON public.post_media
+FOR DELETE
+TO authenticated
+USING (
+    EXISTS (
+        SELECT 1 FROM public.posts 
+        WHERE public.posts.id = post_media.post_id 
+        AND public.posts.user_id = auth.uid()
+    )
+);
+
+-- 5.2 FOLLOWS TABLE
 CREATE TABLE IF NOT EXISTS public.follows (
     follower_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     following_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -220,7 +205,7 @@ FOR DELETE
 TO authenticated
 USING (auth.uid() = follower_id);
 
--- 8.3 LIKES TABLE
+-- 5.3 LIKES TABLE
 CREATE TABLE IF NOT EXISTS public.likes (
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     post_id UUID NOT NULL REFERENCES public.posts(id) ON DELETE CASCADE,
@@ -251,7 +236,7 @@ FOR DELETE
 TO authenticated
 USING (auth.uid() = user_id);
 
--- 8.4 COMMENTS TABLE
+-- 5.4 COMMENTS TABLE
 CREATE TABLE IF NOT EXISTS public.comments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -289,7 +274,7 @@ CREATE TRIGGER set_comments_updated_at
   BEFORE UPDATE ON public.comments
   FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
--- 8.5 SAVED POSTS TABLE
+-- 5.5 SAVED POSTS TABLE
 CREATE TABLE IF NOT EXISTS public.saved_posts (
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     post_id UUID NOT NULL REFERENCES public.posts(id) ON DELETE CASCADE,
@@ -320,7 +305,7 @@ FOR DELETE
 TO authenticated
 USING (auth.uid() = user_id);
 
--- 8.6 NOTIFICATIONS TABLE
+-- 5.6 NOTIFICATIONS TABLE
 CREATE TABLE IF NOT EXISTS public.notifications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     recipient_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -354,3 +339,45 @@ FOR UPDATE
 TO authenticated
 USING (auth.uid() = recipient_id)
 WITH CHECK (auth.uid() = recipient_id);
+
+-- ====================================================================
+-- 6. Performance Indexes for Social Feeds & Queries
+-- ====================================================================
+CREATE INDEX IF NOT EXISTS idx_posts_created_at ON public.posts(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_posts_user_created ON public.posts(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_posts_destination ON public.posts(destination);
+CREATE INDEX IF NOT EXISTS idx_profiles_full_name ON public.profiles(full_name);
+CREATE INDEX IF NOT EXISTS idx_likes_post_id ON public.likes(post_id);
+CREATE INDEX IF NOT EXISTS idx_comments_post_id ON public.comments(post_id);
+CREATE INDEX IF NOT EXISTS idx_follows_follower_id ON public.follows(follower_id);
+CREATE INDEX IF NOT EXISTS idx_follows_following_id ON public.follows(following_id);
+CREATE INDEX IF NOT EXISTS idx_saved_posts_user_id ON public.saved_posts(user_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_recipient_id ON public.notifications(recipient_id, created_at DESC);
+
+-- ====================================================================
+-- 7. Supabase Storage Setup Reference (SQL Editor in Supabase)
+-- ====================================================================
+-- Execute in Supabase SQL editor to create the public tripnest-media bucket:
+--
+-- INSERT INTO storage.buckets (id, name, public) 
+-- VALUES ('tripnest-media', 'tripnest-media', true)
+-- ON CONFLICT (id) DO NOTHING;
+--
+-- CREATE POLICY "Public Access" 
+-- ON storage.objects FOR SELECT 
+-- USING (bucket_id = 'tripnest-media');
+--
+-- CREATE POLICY "Authenticated users can upload" 
+-- ON storage.objects FOR INSERT 
+-- TO authenticated 
+-- WITH CHECK (bucket_id = 'tripnest-media');
+--
+-- CREATE POLICY "Users can update own files" 
+-- ON storage.objects FOR UPDATE 
+-- TO authenticated 
+-- USING (bucket_id = 'tripnest-media' AND auth.uid()::text = (storage.foldername(name))[2]);
+--
+-- CREATE POLICY "Users can delete own files" 
+-- ON storage.objects FOR DELETE 
+-- TO authenticated 
+-- USING (bucket_id = 'tripnest-media' AND auth.uid()::text = (storage.foldername(name))[2]);

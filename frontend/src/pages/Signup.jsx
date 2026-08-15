@@ -142,7 +142,7 @@ function Signup() {
                 <input
                   type="text"
                   className={`form-control rounded-3 p-3 ${errors.fullName ? 'is-invalid' : ''}`}
-                  placeholder="e.g. John Doe"
+                  placeholder="Enter your full name"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   disabled={loading}

@@ -21,13 +21,19 @@ public class SocialController {
 
     // Feeds
     @GetMapping("/feed/home")
-    public ResponseEntity<List<PostResponse>> getHomeFeed(@RequestHeader(value = "Authorization", required = false) String authHeader) {
-        return ResponseEntity.ok(socialService.getHomeFeed(authHeader));
+    public ResponseEntity<List<PostResponse>> getHomeFeed(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @RequestParam(value = "limit", defaultValue = "10") int limit,
+            @RequestParam(value = "offset", defaultValue = "0") int offset) {
+        return ResponseEntity.ok(socialService.getHomeFeed(authHeader, limit, offset));
     }
 
     @GetMapping("/feed/following")
-    public ResponseEntity<List<PostResponse>> getFollowingFeed(@RequestHeader(value = "Authorization", required = false) String authHeader) {
-        return ResponseEntity.ok(socialService.getFollowingFeed(authHeader));
+    public ResponseEntity<List<PostResponse>> getFollowingFeed(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @RequestParam(value = "limit", defaultValue = "10") int limit,
+            @RequestParam(value = "offset", defaultValue = "0") int offset) {
+        return ResponseEntity.ok(socialService.getFollowingFeed(authHeader, limit, offset));
     }
 
     @GetMapping("/posts/saved")
@@ -43,6 +49,13 @@ public class SocialController {
     }
 
     // Posts CRUD
+    @GetMapping("/posts/{id}")
+    public ResponseEntity<PostResponse> getPostById(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @PathVariable String id) {
+        return ResponseEntity.ok(socialService.getPostById(authHeader, id));
+    }
+
     @PostMapping("/posts")
     public ResponseEntity<PostResponse> createPost(
             @RequestHeader(value = "Authorization", required = false) String authHeader,
@@ -168,5 +181,47 @@ public class SocialController {
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
         socialService.markNotificationsRead(authHeader);
         return ResponseEntity.ok().build();
+    }
+
+    // Phase 7: Advanced Discovery & Search
+    @GetMapping("/search")
+    public ResponseEntity<SearchResultDto> searchGlobal(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @RequestParam("q") String query,
+            @RequestParam(value = "type", defaultValue = "all") String type,
+            @RequestParam(value = "limit", defaultValue = "10") int limit,
+            @RequestParam(value = "offset", defaultValue = "0") int offset) {
+        return ResponseEntity.ok(socialService.searchGlobal(authHeader, query, type, limit, offset));
+    }
+
+    @GetMapping("/explore/destinations/{destination}/posts")
+    public ResponseEntity<List<PostResponse>> getPostsByDestination(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @PathVariable String destination,
+            @RequestParam(value = "limit", defaultValue = "20") int limit,
+            @RequestParam(value = "offset", defaultValue = "0") int offset) {
+        return ResponseEntity.ok(socialService.getPostsByDestination(authHeader, destination, limit, offset));
+    }
+
+    @GetMapping("/explore/trending")
+    public ResponseEntity<List<PostResponse>> getTrendingPosts(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @RequestParam(value = "limit", defaultValue = "20") int limit,
+            @RequestParam(value = "offset", defaultValue = "0") int offset) {
+        return ResponseEntity.ok(socialService.getTrendingPosts(authHeader, limit, offset));
+    }
+
+    @GetMapping("/explore/trending-destinations")
+    public ResponseEntity<List<DestinationDto>> getTrendingDestinations(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @RequestParam(value = "limit", defaultValue = "10") int limit) {
+        return ResponseEntity.ok(socialService.getTrendingDestinations(authHeader, limit));
+    }
+
+    @GetMapping("/travelers/suggested")
+    public ResponseEntity<List<TravelerDto>> getSuggestedTravelers(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @RequestParam(value = "limit", defaultValue = "5") int limit) {
+        return ResponseEntity.ok(socialService.getSuggestedTravelers(authHeader, limit));
     }
 }

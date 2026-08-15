@@ -166,3 +166,44 @@ input:focus-visible {
     overflow-y: visible;
   }
 }
+
+/* Instagram Double-Tap Like Heart Animation */
+@keyframes heartPop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0);
+  }
+  20% {
+    opacity: 0.95;
+    transform: translate(-50%, -50%) scale(1.25);
+  }
+  45% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  80% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.4);
+  }
+}
+
+.drop-shadow {
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.45));
+}
+
+.pointer-events-none {
+  pointer-events: none !important;
+}
+
+.transition-transform {
+  transition: transform 0.15s ease-in-out;
+}
+
+.transition-transform:active {
+  transform: scale(1.2);
+}
+

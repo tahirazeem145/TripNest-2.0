@@ -1,10 +1,36 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { socialService } from '../services/socialService';
 
 export default function SocialLayout({ children }) {
-  const { user, logout } = useAuth();
+  const { user, token, logout } = useAuth();
   const navigate = useNavigate();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  // Periodic lightweight check for unread notifications (every 30 seconds)
+  useEffect(() => {
+    let isMounted = true;
+    const fetchUnread = async () => {
+      if (!token) return;
+      try {
+        const list = await socialService.getNotifications(token);
+        if (isMounted && Array.isArray(list)) {
+          const unread = list.filter((n) => !n.is_read).length;
+          setUnreadCount(unread);
+        }
+      } catch (err) {
+        // Non-fatal
+      }
+    };
+
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 30000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [token]);
 
   const handleLogout = () => {
     logout();
@@ -14,11 +40,16 @@ export default function SocialLayout({ children }) {
   const navItems = [
     { to: '/home', icon: 'bi-house-door', activeIcon: 'bi-house-door-fill', label: 'Home' },
     { to: '/following', icon: 'bi-people', activeIcon: 'bi-people-fill', label: 'Following' },
-    { to: '/travelers', icon: 'bi-compass', activeIcon: 'bi-compass-fill', label: 'Travelers' },
-    { to: '/notifications', icon: 'bi-heart', activeIcon: 'bi-heart-fill', label: 'Notifications' },
+    { to: '/travelers', icon: 'bi-compass', activeIcon: 'bi-compass-fill', label: 'Explore' },
+    { 
+      to: '/notifications', 
+      icon: 'bi-heart', 
+      activeIcon: 'bi-heart-fill', 
+      label: 'Notifications',
+      badge: unreadCount 
+    },
     { to: '/create', icon: 'bi-plus-square', activeIcon: 'bi-plus-square-fill', label: 'Create' },
     { to: '/saved', icon: 'bi-bookmark', activeIcon: 'bi-bookmark-fill', label: 'Saved' },
-    { to: '/my-journeys', icon: 'bi-map', activeIcon: 'bi-map-fill', label: 'Journeys' },
     { to: '/profile', icon: 'bi-person', activeIcon: 'bi-person-fill', label: 'Profile' },
   ];
 
@@ -34,8 +65,13 @@ export default function SocialLayout({ children }) {
           </Link>
           
           <div className="d-flex align-items-center gap-2">
-            <Link to="/notifications" className="btn btn-light rounded-circle p-2" aria-label="Notifications">
+            <Link to="/notifications" className="btn btn-light rounded-circle p-2 position-relative" aria-label="Notifications">
               <i className="bi bi-heart fs-5 text-dark"></i>
+              {unreadCount > 0 && (
+                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ fontSize: '0.65rem' }}>
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
             </Link>
             <Link to="/profile" className="d-flex align-items-center text-decoration-none">
               <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style={{ width: '32px', height: '32px', fontSize: '0.85rem' }}>
@@ -66,15 +102,22 @@ export default function SocialLayout({ children }) {
                     key={item.to}
                     to={item.to}
                     className={({ isActive }) =>
-                      `nav-link d-flex align-items-center gap-3 px-3 py-2 rounded-4 fw-medium text-dark transition-all ${
+                      `nav-link d-flex align-items-center justify-content-between px-3 py-2 rounded-4 fw-medium text-dark transition-all ${
                         isActive ? 'bg-primary text-white shadow-sm fw-bold' : 'hover-bg-light text-secondary'
                       }`
                     }
                   >
                     {({ isActive }) => (
                       <>
-                        <i className={`bi ${isActive ? item.activeIcon : item.icon} fs-5`}></i>
-                        <span className="fs-6">{item.label}</span>
+                        <div className="d-flex align-items-center gap-3">
+                          <i className={`bi ${isActive ? item.activeIcon : item.icon} fs-5`}></i>
+                          <span className="fs-6">{item.label}</span>
+                        </div>
+                        {item.badge > 0 && (
+                          <span className={`badge rounded-pill ${isActive ? 'bg-white text-primary' : 'bg-danger text-white'}`} style={{ fontSize: '0.7rem' }}>
+                            {item.badge > 9 ? '9+' : item.badge}
+                          </span>
+                        )}
                       </>
                     )}
                   </NavLink>

@@ -38,10 +38,20 @@ public class SocialService {
     }
 
     /**
-     * Create a new post
+     * Create a new post (supports multi-image post_media)
      */
     public PostResponse createPost(String authHeader, PostRequest request) {
         UserDto user = extractAuthenticatedUser(authHeader);
+
+        // Determine primary image URL (from request.imageUrl or first item in media)
+        String primaryImageUrl = request.getImageUrl();
+        if ((primaryImageUrl == null || primaryImageUrl.isBlank()) && request.getMedia() != null && !request.getMedia().isEmpty()) {
+            primaryImageUrl = request.getMedia().get(0).getMediaUrl();
+        }
+
+        if (primaryImageUrl == null || primaryImageUrl.isBlank()) {
+            throw new IllegalArgumentException("At least one image is required.");
+        }
 
         String url = supabaseUrl + "/rest/v1/posts";
         HttpHeaders headers = createAuthenticatedHeaders(authHeader);
@@ -49,12 +59,9 @@ public class SocialService {
 
         Map<String, Object> body = new HashMap<>();
         body.put("user_id", user.getId());
-        body.put("image_url", request.getImageUrl());
+        body.put("image_url", primaryImageUrl);
         body.put("caption", request.getCaption());
         body.put("destination", request.getDestination());
-        if (request.getJourneyId() != null && !request.getJourneyId().isBlank()) {
-            body.put("journey_id", request.getJourneyId());
-        }
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
@@ -64,6 +71,43 @@ public class SocialService {
             if (list != null && !list.isEmpty()) {
                 PostResponse created = list.get(0);
                 created.setAuthor(user);
+
+                // Insert into post_media table if multiple or individual media provided
+                List<PostMediaDto> mediaList = new ArrayList<>();
+                if (request.getMedia() != null && !request.getMedia().isEmpty()) {
+                    String mediaUrlEndpoint = supabaseUrl + "/rest/v1/post_media";
+                    List<Map<String, Object>> mediaBatch = new ArrayList<>();
+                    int order = 0;
+                    for (PostMediaDto m : request.getMedia()) {
+                        if (m.getMediaUrl() != null && !m.getMediaUrl().isBlank()) {
+                            Map<String, Object> mRow = new HashMap<>();
+                            mRow.put("post_id", created.getId());
+                            mRow.put("media_url", m.getMediaUrl().trim());
+                            mRow.put("media_type", (m.getMediaType() != null) ? m.getMediaType() : "image");
+                            mRow.put("display_order", order++);
+                            mediaBatch.add(mRow);
+                        }
+                    }
+
+                    if (!mediaBatch.isEmpty()) {
+                        try {
+                            HttpEntity<List<Map<String, Object>>> mediaEntity = new HttpEntity<>(mediaBatch, headers);
+                            ResponseEntity<String> mediaResp = restTemplate.postForEntity(mediaUrlEndpoint, mediaEntity, String.class);
+                            List<PostMediaDto> insertedMedia = objectMapper.readValue(mediaResp.getBody(), new TypeReference<List<PostMediaDto>>() {});
+                            if (insertedMedia != null) {
+                                mediaList.addAll(insertedMedia);
+                            }
+                        } catch (Exception e) {
+                            logger.warn("[POSTS] Error saving post_media rows (fallback to primary): {}", e.getMessage());
+                        }
+                    }
+                }
+
+                // Fallback: if no separate post_media created, use primaryImageUrl
+                if (mediaList.isEmpty()) {
+                    mediaList.add(new PostMediaDto(primaryImageUrl, 0));
+                }
+                created.setMedia(mediaList);
                 return created;
             }
             throw new RuntimeException("Failed to create post.");
@@ -79,12 +123,15 @@ public class SocialService {
     }
 
     /**
-     * Get Discovery Home Feed
+     * Get Discovery Home Feed with pagination
      */
-    public List<PostResponse> getHomeFeed(String authHeader) {
+    public List<PostResponse> getHomeFeed(String authHeader, int limit, int offset) {
         UserDto currentUser = extractAuthenticatedUser(authHeader);
 
-        String url = supabaseUrl + "/rest/v1/posts?select=*&order=created_at.desc&limit=50";
+        int safeLimit = (limit > 0 && limit <= 50) ? limit : 10;
+        int safeOffset = Math.max(0, offset);
+
+        String url = supabaseUrl + "/rest/v1/posts?select=*&order=created_at.desc&limit=" + safeLimit + "&offset=" + safeOffset;
         HttpHeaders headers = createAuthenticatedHeaders(authHeader);
         HttpEntity<Void> entity = new HttpEntity<>(headers);
 
@@ -104,10 +151,13 @@ public class SocialService {
     }
 
     /**
-     * Get Following Feed
+     * Get Following Feed with pagination
      */
-    public List<PostResponse> getFollowingFeed(String authHeader) {
+    public List<PostResponse> getFollowingFeed(String authHeader, int limit, int offset) {
         UserDto currentUser = extractAuthenticatedUser(authHeader);
+
+        int safeLimit = (limit > 0 && limit <= 50) ? limit : 10;
+        int safeOffset = Math.max(0, offset);
 
         // 1. Get following IDs
         List<String> followingIds = getFollowingUserIds(authHeader, currentUser.getId());
@@ -117,7 +167,7 @@ public class SocialService {
 
         // 2. Fetch posts from those following IDs
         String idList = followingIds.stream().collect(Collectors.joining(","));
-        String url = supabaseUrl + "/rest/v1/posts?user_id=in.(" + idList + ")&select=*&order=created_at.desc&limit=50";
+        String url = supabaseUrl + "/rest/v1/posts?user_id=in.(" + idList + ")&select=*&order=created_at.desc&limit=" + safeLimit + "&offset=" + safeOffset;
         HttpHeaders headers = createAuthenticatedHeaders(authHeader);
         HttpEntity<Void> entity = new HttpEntity<>(headers);
 
@@ -218,6 +268,8 @@ public class SocialService {
                 throw new ForbiddenException("You cannot delete another user's post.");
             }
 
+            // Perform post deletion
+            restTemplate.exchange(url, HttpMethod.DELETE, entity, Void.class);
         } catch (HttpClientErrorException e) {
             handleRestError(e);
             throw new RuntimeException("Failed to delete post.");
@@ -294,6 +346,14 @@ public class SocialService {
 
         try {
             restTemplate.postForEntity(url, entity, String.class);
+
+            // Notify post owner of saved post
+            try {
+                PostResponse post = getPostById(authHeader, postId);
+                if (!post.getUserId().equals(currentUser.getId())) {
+                    createNotification(authHeader, post.getUserId(), currentUser.getId(), "save", postId);
+                }
+            } catch (Exception ignored) {}
         } catch (HttpClientErrorException e) {
             if (e.getStatusCode() == HttpStatus.CONFLICT) {
                 return; // Already saved
@@ -559,17 +619,26 @@ public class SocialService {
         try {
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
             List<Map<String, Object>> list = objectMapper.readValue(response.getBody(), new TypeReference<List<Map<String, Object>>>() {});
-            if (list.isEmpty()) {
-                throw new ResourceNotFoundException("Profile not found.");
-            }
-
-            Map<String, Object> p = list.get(0);
+            
             TravelerDto dto = new TravelerDto();
             dto.setId(targetId);
-            dto.setEmail((String) p.get("email"));
-            dto.setFullName((String) p.get("full_name"));
-            dto.setAvatarUrl((String) p.get("avatar_url"));
-            dto.setBio((String) p.get("bio"));
+
+            if (list.isEmpty()) {
+                if (targetId.equals(currentUser.getId())) {
+                    dto.setEmail(currentUser.getEmail());
+                    dto.setFullName(currentUser.getFullName() != null ? currentUser.getFullName() : currentUser.getEmail().split("@")[0]);
+                    dto.setBio("");
+                    dto.setAvatarUrl("");
+                } else {
+                    throw new ResourceNotFoundException("Profile not found.");
+                }
+            } else {
+                Map<String, Object> p = list.get(0);
+                dto.setEmail((String) p.get("email"));
+                dto.setFullName((String) p.get("full_name"));
+                dto.setAvatarUrl((String) p.get("avatar_url"));
+                dto.setBio((String) p.get("bio"));
+            }
 
             // Followers count
             String followersUrl = supabaseUrl + "/rest/v1/follows?following_id=eq." + targetId + "&select=follower_id";
@@ -613,11 +682,13 @@ public class SocialService {
     public TravelerDto updateProfile(String authHeader, ProfileUpdateRequest request) {
         UserDto currentUser = extractAuthenticatedUser(authHeader);
 
-        String url = supabaseUrl + "/rest/v1/profiles?id=eq." + currentUser.getId();
+        String url = supabaseUrl + "/rest/v1/profiles";
         HttpHeaders headers = createAuthenticatedHeaders(authHeader);
-        headers.set("Prefer", "return=representation");
+        headers.set("Prefer", "resolution=merge-duplicates,return=representation");
 
         Map<String, Object> body = new HashMap<>();
+        body.put("id", currentUser.getId());
+        body.put("email", currentUser.getEmail());
         if (request != null) {
             if (request.getFullName() != null) body.put("full_name", request.getFullName());
             if (request.getBio() != null) body.put("bio", request.getBio());
@@ -627,7 +698,7 @@ public class SocialService {
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
         try {
-            restTemplate.exchange(url, HttpMethod.PATCH, entity, String.class);
+            restTemplate.postForEntity(url, entity, String.class);
             return getTravelerProfile(authHeader, currentUser.getId());
         } catch (HttpClientErrorException e) {
             logger.error("[PROFILE] Error updating profile: status={}, body={}", e.getStatusCode(), e.getResponseBodyAsString());
@@ -644,16 +715,28 @@ public class SocialService {
 
     // Helper functions
 
-    private PostResponse getPostById(String authHeader, String postId) {
+    /**
+     * Get Single Post By ID (Enriched)
+     */
+    public PostResponse getPostById(String authHeader, String postId) {
+        UserDto currentUser = extractAuthenticatedUser(authHeader);
+
         String url = supabaseUrl + "/rest/v1/posts?id=eq." + postId + "&select=*";
         HttpHeaders headers = createAuthenticatedHeaders(authHeader);
         HttpEntity<Void> entity = new HttpEntity<>(headers);
         try {
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
             List<PostResponse> list = objectMapper.readValue(response.getBody(), new TypeReference<List<PostResponse>>() {});
-            if (list != null && !list.isEmpty()) return list.get(0);
+            if (list != null && !list.isEmpty()) {
+                List<PostResponse> enriched = enrichPosts(authHeader, currentUser.getId(), list);
+                return enriched.get(0);
+            }
+            throw new ResourceNotFoundException("Post not found.");
+        } catch (HttpClientErrorException e) {
+            handleRestError(e);
             throw new ResourceNotFoundException("Post not found.");
         } catch (Exception e) {
+            if (e instanceof ResourceNotFoundException) throw (ResourceNotFoundException) e;
             throw new ResourceNotFoundException("Post not found.");
         }
     }
@@ -722,12 +805,35 @@ public class SocialService {
             List<Map<String, Object>> savedList = objectMapper.readValue(savedResp.getBody(), new TypeReference<List<Map<String, Object>>>() {});
             Set<String> mySavedPostIds = savedList.stream().map(m -> (String) m.get("post_id")).collect(Collectors.toSet());
 
+            // Multi-image post_media
+            Map<String, List<PostMediaDto>> postMediaMap = new HashMap<>();
+            try {
+                String mediaUrl = supabaseUrl + "/rest/v1/post_media?post_id=in.(" + postIdList + ")&select=*&order=display_order.asc";
+                ResponseEntity<String> mediaResp = restTemplate.exchange(mediaUrl, HttpMethod.GET, entity, String.class);
+                List<PostMediaDto> allMedia = objectMapper.readValue(mediaResp.getBody(), new TypeReference<List<PostMediaDto>>() {});
+                if (allMedia != null) {
+                    postMediaMap = allMedia.stream().collect(Collectors.groupingBy(PostMediaDto::getPostId));
+                }
+            } catch (Exception e) {
+                logger.debug("[POST_MEDIA] Non-fatal post_media query error (using fallback): {}", e.getMessage());
+            }
+
             for (PostResponse p : posts) {
                 p.setAuthor(userMap.get(p.getUserId()));
                 p.setLikesCount(likesCountMap.getOrDefault(p.getId(), 0L).intValue());
                 p.setCommentsCount(commentsCountMap.getOrDefault(p.getId(), 0L).intValue());
                 p.setLiked(myLikedPostIds.contains(p.getId()));
                 p.setSaved(mySavedPostIds.contains(p.getId()));
+
+                // Populate media list (or fallback to primary image_url)
+                List<PostMediaDto> pMedia = postMediaMap.get(p.getId());
+                if (pMedia != null && !pMedia.isEmpty()) {
+                    p.setMedia(pMedia);
+                } else if (p.getImageUrl() != null && !p.getImageUrl().isBlank()) {
+                    List<PostMediaDto> single = new ArrayList<>();
+                    single.add(new PostMediaDto(p.getImageUrl(), 0));
+                    p.setMedia(single);
+                }
             }
         } catch (Exception e) {
             logger.warn("Error enriching posts metadata: {}", e.getMessage());
@@ -790,5 +896,186 @@ public class SocialService {
         } else if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
             throw new ResourceNotFoundException("Resource not found.");
         }
+    }
+
+    /**
+     * Unified Global Search: Travelers, Posts, Destinations
+     */
+    public SearchResultDto searchGlobal(String authHeader, String query, String type, int limit, int offset) {
+        UserDto currentUser = extractAuthenticatedUser(authHeader);
+        String q = (query != null) ? query.trim() : "";
+        String searchType = (type != null) ? type.trim().toLowerCase() : "all";
+
+        List<TravelerDto> travelers = new ArrayList<>();
+        List<PostResponse> posts = new ArrayList<>();
+        List<DestinationDto> destinations = new ArrayList<>();
+
+        if (q.isEmpty()) {
+            return new SearchResultDto(travelers, posts, destinations);
+        }
+
+        // 1. Search Travelers
+        if (searchType.equals("all") || searchType.equals("traveler") || searchType.equals("travelers")) {
+            travelers = getTravelers(authHeader, q);
+            if (travelers.size() > limit) {
+                travelers = travelers.subList(0, Math.min(limit, travelers.size()));
+            }
+        }
+
+        // 2. Search Posts (by caption or destination)
+        if (searchType.equals("all") || searchType.equals("post") || searchType.equals("posts")) {
+            try {
+                String safeQuery = q.replace(" ", "%");
+                String postsUrl = supabaseUrl + "/rest/v1/posts?or=(caption.ilike.*" + safeQuery + "*,destination.ilike.*" + safeQuery + "*)" +
+                        "&order=created_at.desc&limit=" + limit + "&offset=" + offset;
+                HttpHeaders headers = createAuthenticatedHeaders(authHeader);
+                HttpEntity<Void> entity = new HttpEntity<>(headers);
+                ResponseEntity<String> response = restTemplate.exchange(postsUrl, HttpMethod.GET, entity, String.class);
+                List<PostResponse> postList = objectMapper.readValue(response.getBody(), new TypeReference<List<PostResponse>>() {});
+                posts = enrichPosts(authHeader, currentUser.getId(), postList);
+            } catch (Exception e) {
+                logger.warn("[SEARCH] Error searching posts: {}", e.getMessage());
+            }
+        }
+
+        // 3. Search Destinations
+        if (searchType.equals("all") || searchType.equals("destination") || searchType.equals("destinations")) {
+            try {
+                String safeQuery = q.replace(" ", "%");
+                String destUrl = supabaseUrl + "/rest/v1/posts?destination.ilike.*" + safeQuery + "*&select=destination,image_url,created_at&limit=50";
+                HttpHeaders headers = createAuthenticatedHeaders(authHeader);
+                HttpEntity<Void> entity = new HttpEntity<>(headers);
+                ResponseEntity<String> response = restTemplate.exchange(destUrl, HttpMethod.GET, entity, String.class);
+                List<Map<String, Object>> raw = objectMapper.readValue(response.getBody(), new TypeReference<List<Map<String, Object>>>() {});
+
+                Map<String, List<Map<String, Object>>> grouped = raw.stream()
+                        .filter(m -> m.get("destination") != null && !((String) m.get("destination")).isBlank())
+                        .collect(Collectors.groupingBy(m -> ((String) m.get("destination")).trim()));
+
+                for (Map.Entry<String, List<Map<String, Object>>> entry : grouped.entrySet()) {
+                    String dName = entry.getKey();
+                    int count = entry.getValue().size();
+                    String sampleImg = (String) entry.getValue().get(0).get("image_url");
+                    destinations.add(new DestinationDto(dName, count, sampleImg));
+                }
+                destinations.sort((a, b) -> Integer.compare(b.getPostCount(), a.getPostCount()));
+                if (destinations.size() > limit) {
+                    destinations = destinations.subList(0, limit);
+                }
+            } catch (Exception e) {
+                logger.warn("[SEARCH] Error searching destinations: {}", e.getMessage());
+            }
+        }
+
+        return new SearchResultDto(travelers, posts, destinations);
+    }
+
+    /**
+     * Get Posts By Destination
+     */
+    public List<PostResponse> getPostsByDestination(String authHeader, String destination, int limit, int offset) {
+        UserDto currentUser = extractAuthenticatedUser(authHeader);
+        if (destination == null || destination.isBlank()) {
+            return Collections.emptyList();
+        }
+
+        String safeDest = destination.trim().replace(" ", "%");
+        String url = supabaseUrl + "/rest/v1/posts?destination.ilike.*" + safeDest + "*&order=created_at.desc&limit=" + limit + "&offset=" + offset;
+        HttpHeaders headers = createAuthenticatedHeaders(authHeader);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+            List<PostResponse> posts = objectMapper.readValue(response.getBody(), new TypeReference<List<PostResponse>>() {});
+            return enrichPosts(authHeader, currentUser.getId(), posts);
+        } catch (HttpClientErrorException e) {
+            handleRestError(e);
+            throw new RuntimeException("Failed to fetch destination posts.");
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to fetch destination posts.");
+        }
+    }
+
+    /**
+     * Get Trending Posts (Calculated score: likes*3 + comments*2 + recency)
+     */
+    public List<PostResponse> getTrendingPosts(String authHeader, int limit, int offset) {
+        UserDto currentUser = extractAuthenticatedUser(authHeader);
+
+        // Fetch recent 50 posts to calculate live trending scores
+        String url = supabaseUrl + "/rest/v1/posts?order=created_at.desc&limit=50";
+        HttpHeaders headers = createAuthenticatedHeaders(authHeader);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+            List<PostResponse> rawPosts = objectMapper.readValue(response.getBody(), new TypeReference<List<PostResponse>>() {});
+            List<PostResponse> enriched = enrichPosts(authHeader, currentUser.getId(), rawPosts);
+
+            // Sort by live engagement: likesCount * 3 + commentsCount * 2
+            enriched.sort((a, b) -> {
+                int scoreA = (a.getLikesCount() * 3) + (a.getCommentsCount() * 2);
+                int scoreB = (b.getLikesCount() * 3) + (b.getCommentsCount() * 2);
+                return Integer.compare(scoreB, scoreA);
+            });
+
+            int fromIndex = Math.min(offset, enriched.size());
+            int toIndex = Math.min(fromIndex + limit, enriched.size());
+            return enriched.subList(fromIndex, toIndex);
+        } catch (Exception e) {
+            logger.warn("[TRENDING] Error getting trending posts: {}", e.getMessage());
+            return Collections.emptyList();
+        }
+    }
+
+    /**
+     * Get Trending Destinations from Real Posts
+     */
+    public List<DestinationDto> getTrendingDestinations(String authHeader, int limit) {
+        extractAuthenticatedUser(authHeader);
+
+        String url = supabaseUrl + "/rest/v1/posts?select=destination,image_url,created_at&limit=100";
+        HttpHeaders headers = createAuthenticatedHeaders(authHeader);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+            List<Map<String, Object>> raw = objectMapper.readValue(response.getBody(), new TypeReference<List<Map<String, Object>>>() {});
+
+            Map<String, List<Map<String, Object>>> grouped = raw.stream()
+                    .filter(m -> m.get("destination") != null && !((String) m.get("destination")).isBlank())
+                    .collect(Collectors.groupingBy(m -> ((String) m.get("destination")).trim()));
+
+            List<DestinationDto> list = new ArrayList<>();
+            for (Map.Entry<String, List<Map<String, Object>>> entry : grouped.entrySet()) {
+                String dName = entry.getKey();
+                int count = entry.getValue().size();
+                String sampleImg = (String) entry.getValue().get(0).get("image_url");
+                list.add(new DestinationDto(dName, count, sampleImg));
+            }
+
+            list.sort((a, b) -> Integer.compare(b.getPostCount(), a.getPostCount()));
+            return list.subList(0, Math.min(limit, list.size()));
+        } catch (Exception e) {
+            logger.warn("[TRENDING] Error getting trending destinations: {}", e.getMessage());
+            return Collections.emptyList();
+        }
+    }
+
+    /**
+     * Get Suggested Travelers (Active users not yet followed, excluding self)
+     */
+    public List<TravelerDto> getSuggestedTravelers(String authHeader, int limit) {
+        UserDto currentUser = extractAuthenticatedUser(authHeader);
+        List<TravelerDto> all = getTravelers(authHeader, "");
+
+        // Filter out self and travelers already followed
+        List<TravelerDto> suggestions = all.stream()
+                .filter(t -> !t.getId().equals(currentUser.getId()))
+                .filter(t -> !t.isFollowing())
+                .sorted((a, b) -> Integer.compare(b.getFollowersCount(), a.getFollowersCount()))
+                .collect(Collectors.toList());
+
+        return suggestions.subList(0, Math.min(limit, suggestions.size()));
     }
 }

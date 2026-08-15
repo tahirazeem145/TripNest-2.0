@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import travelBg from '../../assets/travel_bg.jpg';
 
 export default function PostGrid({ posts = [], onPostClick }) {
@@ -13,23 +14,56 @@ export default function PostGrid({ posts = [], onPostClick }) {
   }
 
   return (
-    <div className="row g-3">
-      {posts.map((post) => (
-        <div key={post.id} className="col-4">
-          <div
-            onClick={() => onPostClick && onPostClick(post)}
-            className="rounded-3 overflow-hidden position-relative ratio ratio-1x1 shadow-sm style-card cursor-pointer"
-            style={{ backgroundColor: '#0f172a', cursor: onPostClick ? 'pointer' : 'default' }}
-          >
-            <img
-              src={post.image_url || travelBg}
-              alt={post.caption || 'Travel moment'}
-              onError={(e) => { e.target.src = travelBg; }}
-              className="w-100 h-100 object-fit-cover"
-            />
+    <div className="row g-2 g-sm-3">
+      {posts.map((post) => {
+        const isMulti = post.media && post.media.length > 1;
+        const thumbnail =
+          post.media && post.media.length > 0
+            ? post.media[0].media_url
+            : post.image_url || travelBg;
+
+        return (
+          <div key={post.id} className="col-4">
+            <Link
+              to={`/post/${post.id}`}
+              onClick={(e) => {
+                if (onPostClick) {
+                  e.preventDefault();
+                  onPostClick(post);
+                }
+              }}
+              className="rounded-3 overflow-hidden position-relative ratio ratio-1x1 shadow-sm style-card d-block"
+              style={{ backgroundColor: '#0f172a' }}
+            >
+              <img
+                src={thumbnail}
+                alt={post.caption || 'Travel moment'}
+                loading="lazy"
+                onError={(e) => { e.target.src = travelBg; }}
+                className="w-100 h-100 object-fit-cover"
+              />
+
+              {/* Multi-Image Indicator Icon */}
+              {isMulti && (
+                <div className="position-absolute top-0 end-0 m-2 text-white drop-shadow" title="Multiple photos">
+                  <i className="bi bi-images fs-6"></i>
+                </div>
+              )}
+
+              {/* Destination Tag */}
+              {post.destination && (
+                <div
+                  className="position-absolute bottom-0 start-0 end-0 p-1 p-sm-2 text-white extra-small text-truncate"
+                  style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)' }}
+                >
+                  <i className="bi bi-geo-alt-fill me-1"></i>
+                  {post.destination}
+                </div>
+              )}
+            </Link>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

@@ -63,6 +63,10 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
+  const updateUser = (updates) => {
+    setUser((prev) => (prev ? { ...prev, ...updates } : prev));
+  };
+
   const value = {
     user,
     token,
@@ -70,7 +74,8 @@ export function AuthProvider({ children }) {
     loading,
     login,
     signup,
-    logout
+    logout,
+    updateUser
   };
 
   return (

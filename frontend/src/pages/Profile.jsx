@@ -8,7 +8,7 @@ import PostGrid from '../components/social/PostGrid';
 import LoadingSpinner from '../components/social/LoadingSpinner';
 
 export default function Profile() {
-  const { token, user } = useAuth();
+  const { token, user, updateUser } = useAuth();
   const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,6 +37,12 @@ export default function Profile() {
     try {
       const updated = await socialService.updateProfile(token, updates);
       setProfile(updated);
+      if (updateUser) {
+        updateUser({
+          fullName: updated.full_name,
+          avatarUrl: updated.avatar_url
+        });
+      }
     } catch {
       alert('Failed to update profile');
     }

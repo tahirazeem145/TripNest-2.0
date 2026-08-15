@@ -1,16 +1,21 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 export default function CommentSection({ comments = [], onAddComment, postId }) {
   const [content, setContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [commentError, setCommentError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!content.trim() || submitting) return;
     setSubmitting(true);
+    setCommentError('');
     try {
       await onAddComment(postId, content.trim());
       setContent('');
+    } catch (err) {
+      setCommentError('Unable to post comment. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -35,12 +40,35 @@ export default function CommentSection({ comments = [], onAddComment, postId }) 
         ) : (
           comments.map((c) => (
             <div key={c.id} className="d-flex align-items-start gap-2 mb-2">
-              <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style={{ width: '28px', height: '28px', fontSize: '0.75rem' }}>
-                {c.author?.fullName ? c.author.fullName.charAt(0).toUpperCase() : 'T'}
-              </div>
+              <Link
+                to={`/profile/${c.userId}`}
+                className="text-decoration-none flex-shrink-0"
+              >
+                {c.author?.avatarUrl ? (
+                  <img
+                    src={c.author.avatarUrl}
+                    alt={c.author?.fullName || 'Traveler'}
+                    className="rounded-circle object-fit-cover"
+                    style={{ width: '28px', height: '28px' }}
+                    onError={(e) => { e.target.style.display = 'none'; }}
+                  />
+                ) : (
+                  <div
+                    className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold"
+                    style={{ width: '28px', height: '28px', fontSize: '0.75rem' }}
+                  >
+                    {c.author?.fullName ? c.author.fullName.charAt(0).toUpperCase() : 'T'}
+                  </div>
+                )}
+              </Link>
               <div className="flex-grow-1">
                 <div className="small">
-                  <strong className="text-dark me-2">{c.author?.fullName || 'Traveler'}</strong>
+                  <Link
+                    to={`/profile/${c.userId}`}
+                    className="fw-bold text-dark text-decoration-none me-2"
+                  >
+                    {c.author?.fullName || 'Traveler'}
+                  </Link>
                   <span className="text-secondary">{c.content}</span>
                 </div>
                 <div className="extra-small text-muted">{formatCommentDate(c.created_at)}</div>
@@ -49,6 +77,10 @@ export default function CommentSection({ comments = [], onAddComment, postId }) 
           ))
         )}
       </div>
+
+      {commentError && (
+        <div className="alert alert-danger p-2 extra-small rounded-3 mb-2">{commentError}</div>
+      )}
 
       {/* Add Comment Input */}
       <form onSubmit={handleSubmit} className="d-flex align-items-center gap-2">
@@ -63,9 +95,13 @@ export default function CommentSection({ comments = [], onAddComment, postId }) 
         <button
           type="submit"
           disabled={!content.trim() || submitting}
-          className="btn btn-primary btn-sm rounded-pill px-3 fw-semibold flex-shrink-0"
+          className="btn btn-primary btn-sm rounded-pill px-3 fw-semibold flex-shrink-0 shadow-none"
         >
-          {submitting ? 'Posting...' : 'Post'}
+          {submitting ? (
+            <span className="spinner-border spinner-border-sm" style={{ width: '12px', height: '12px' }}></span>
+          ) : (
+            'Post'
+          )}
         </button>
       </form>
     </div>

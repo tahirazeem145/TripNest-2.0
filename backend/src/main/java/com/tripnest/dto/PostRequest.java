@@ -1,18 +1,28 @@
 package com.tripnest.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.util.List;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PostRequest {
     private String imageUrl;
     private String caption;
     private String destination;
-    private String journeyId;
+    private List<PostMediaDto> media;
 
     public PostRequest() {}
 
-    public PostRequest(String imageUrl, String caption, String destination, String journeyId) {
+    public PostRequest(String imageUrl, String caption, String destination) {
         this.imageUrl = imageUrl;
         this.caption = caption;
         this.destination = destination;
-        this.journeyId = journeyId;
+    }
+
+    public PostRequest(String imageUrl, String caption, String destination, List<PostMediaDto> media) {
+        this.imageUrl = imageUrl;
+        this.caption = caption;
+        this.destination = destination;
+        this.media = media;
     }
 
     public String getImageUrl() { return imageUrl; }
@@ -24,6 +34,6 @@ public class PostRequest {
     public String getDestination() { return destination; }
     public void setDestination(String destination) { this.destination = destination; }
 
-    public String getJourneyId() { return journeyId; }
-    public void setJourneyId(String journeyId) { this.journeyId = journeyId; }
+    public List<PostMediaDto> getMedia() { return media; }
+    public void setMedia(List<PostMediaDto> media) { this.media = media; }
 }

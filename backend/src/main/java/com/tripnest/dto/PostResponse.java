@@ -2,6 +2,8 @@ package com.tripnest.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.ArrayList;
+import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PostResponse {
@@ -10,14 +12,14 @@ public class PostResponse {
     @JsonProperty("user_id")
     private String userId;
 
-    @JsonProperty("journey_id")
-    private String journeyId;
-
     @JsonProperty("image_url")
     private String imageUrl;
 
     private String caption;
     private String destination;
+
+    @JsonProperty("media")
+    private List<PostMediaDto> media = new ArrayList<>();
 
     @JsonProperty("created_at")
     private String createdAt;
@@ -48,9 +50,6 @@ public class PostResponse {
     public String getUserId() { return userId; }
     public void setUserId(String userId) { this.userId = userId; }
 
-    public String getJourneyId() { return journeyId; }
-    public void setJourneyId(String journeyId) { this.journeyId = journeyId; }
-
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
@@ -59,6 +58,9 @@ public class PostResponse {
 
     public String getDestination() { return destination; }
     public void setDestination(String destination) { this.destination = destination; }
+
+    public List<PostMediaDto> getMedia() { return media; }
+    public void setMedia(List<PostMediaDto> media) { this.media = media; }
 
     public String getCreatedAt() { return createdAt; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
