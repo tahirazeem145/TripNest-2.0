@@ -292,16 +292,38 @@ export default function Create() {
                   ) : (
                     <div>
                       {/* Main Preview Container */}
-                      <div className="position-relative rounded-4 overflow-hidden shadow-sm mb-3" style={{ height: '360px', backgroundColor: '#0f172a' }}>
+                      <div
+                        className="position-relative rounded-4 overflow-hidden shadow-sm mb-3 d-flex align-items-center justify-content-center"
+                        style={{ minHeight: '280px', maxHeight: '600px', backgroundColor: '#090d16' }}
+                      >
+                        {/* Ambient Backdrop */}
+                        <div
+                          className="position-absolute top-0 start-0 w-100 h-100 opacity-25"
+                          style={{
+                            backgroundImage: `url(${selectedFiles[activePreviewIndex]?.previewUrl})`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            filter: 'blur(24px)',
+                            transform: 'scale(1.15)'
+                          }}
+                        ></div>
+
                         <img
                           src={selectedFiles[activePreviewIndex]?.previewUrl}
                           alt="Main preview"
-                          className="w-100 h-100 object-fit-cover d-block"
+                          className="w-100 d-block position-relative"
+                          style={{
+                            maxHeight: '600px',
+                            objectFit: 'contain',
+                            width: '100%',
+                            height: 'auto',
+                            zIndex: 1
+                          }}
                         />
-                        <div className="position-absolute top-0 start-0 m-3 badge bg-dark bg-opacity-75 rounded-pill px-3 py-2">
+                        <div className="position-absolute top-0 start-0 m-3 badge bg-dark bg-opacity-75 rounded-pill px-3 py-2" style={{ zIndex: 5 }}>
                           Image {activePreviewIndex + 1} of {selectedFiles.length}
                         </div>
-                        <div className="position-absolute top-0 end-0 m-3">
+                        <div className="position-absolute top-0 end-0 m-3" style={{ zIndex: 5 }}>
                           <button
                             type="button"
                             onClick={() => handleRemoveImage(activePreviewIndex)}
@@ -349,7 +371,7 @@ export default function Create() {
 
                       {/* Reorder Buttons for Active Photo */}
                       {selectedFiles.length > 1 && (
-                        <div className="d-flex gap-2 mb-3">
+                        <div className="d-flex gap-2 justify-content-center mb-3">
                           <button
                             type="button"
                             onClick={() => handleMoveImage(activePreviewIndex, activePreviewIndex - 1)}
@@ -381,12 +403,31 @@ export default function Create() {
                       disabled={loading}
                     />
                     {urlPreview && (
-                      <div className="position-relative rounded-4 overflow-hidden shadow-sm mt-3" style={{ maxHeight: '340px', backgroundColor: '#0f172a' }}>
+                      <div
+                        className="position-relative rounded-4 overflow-hidden shadow-sm mt-3 d-flex align-items-center justify-content-center"
+                        style={{ minHeight: '260px', maxHeight: '500px', backgroundColor: '#090d16' }}
+                      >
+                        <div
+                          className="position-absolute top-0 start-0 w-100 h-100 opacity-25"
+                          style={{
+                            backgroundImage: `url(${urlPreview})`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            filter: 'blur(24px)',
+                            transform: 'scale(1.15)'
+                          }}
+                        ></div>
                         <img
                           src={urlPreview}
                           alt="Preview"
-                          className="w-100 h-100 object-fit-cover d-block"
-                          style={{ maxHeight: '340px' }}
+                          className="w-100 d-block position-relative"
+                          style={{
+                            maxHeight: '500px',
+                            objectFit: 'contain',
+                            width: '100%',
+                            height: 'auto',
+                            zIndex: 1
+                          }}
                           onError={() => {
                             setError('Unable to load image from URL. Please check link.');
                             setUrlPreview('');

@@ -15,6 +15,8 @@ import org.springframework.web.client.RestTemplate;
 import java.util.HashMap;
 import java.util.Map;
 
+import jakarta.annotation.PostConstruct;
+
 @Service
 public class AuthService {
 
@@ -28,6 +30,13 @@ public class AuthService {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AuthService.class);
+
+    @PostConstruct
+    public void init() {
+        if (supabaseAnonKey == null || supabaseAnonKey.isBlank() || supabaseAnonKey.contains("YOUR_PUBLI") || supabaseAnonKey.contains("placeholder") || supabaseAnonKey.contains("your-publishable-key")) {
+            this.supabaseAnonKey = "sb_publishable_tpxk77X1biBT7rLY7ar4bw_XMD87GnT";
+        }
+    }
 
     /**
      * Sign up a new user with Supabase Auth.
@@ -48,6 +57,7 @@ public class AuthService {
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
         try {
+            logger.info("[AUTH] Supabase URL: '{}', key prefix: '{}'", supabaseUrl, supabaseAnonKey != null && supabaseAnonKey.length() > 10 ? supabaseAnonKey.substring(0, 10) : supabaseAnonKey);
             logger.info("[AUTH] Attempting Supabase Auth signup for email domain: {}", getEmailDomain(request.getEmail()));
             ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
             JsonNode root = objectMapper.readTree(response.getBody());

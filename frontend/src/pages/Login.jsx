@@ -226,19 +226,49 @@ function Login() {
               <hr className="flex-grow-1 text-muted opacity-25" />
             </div>
 
-            {/* Google OAuth UI button (disabled placeholder) */}
+            {/* Google OAuth UI button */}
             <button
               type="button"
               className="btn btn-outline-secondary w-100 rounded-3 p-3 d-flex align-items-center justify-content-center bg-white opacity-75"
-              disabled
-              title="Google authentication coming in Phase 3"
+              onClick={() => alert("Google OAuth authentication will be enabled with your Google Cloud Client ID in production.")}
             >
               <i className="bi bi-google me-2 text-danger fs-5"></i>
-              <span>Continue with Google (Coming Soon)</span>
+              <span>Continue with Google</span>
             </button>
 
+            {/* Quick Demo Accounts */}
+            <div className="mt-4 pt-3 border-top text-center">
+              <span className="text-secondary extra-small fw-semibold d-block mb-2 text-uppercase tracking-wider">Quick Fill Demo Accounts</span>
+              <div className="d-flex gap-2 justify-content-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail('test@gmail.com');
+                    setPassword('123456');
+                    setErrors({ email: '', password: '' });
+                    setApiError('');
+                  }}
+                  className="btn btn-outline-primary btn-sm rounded-pill px-3 py-1 extra-small fw-semibold"
+                >
+                  <i className="bi bi-person-fill me-1"></i>test@gmail.com
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail('yuva@gmail.com');
+                    setPassword('123456');
+                    setErrors({ email: '', password: '' });
+                    setApiError('');
+                  }}
+                  className="btn btn-outline-info btn-sm rounded-pill px-3 py-1 extra-small fw-semibold"
+                >
+                  <i className="bi bi-person-fill me-1"></i>yuva@gmail.com
+                </button>
+              </div>
+            </div>
+
             {/* Link to Signup */}
-            <div className="mt-4 text-center">
+            <div className="mt-3 text-center">
               <span className="text-secondary small">Don't have an account? </span>
               <Link to="/signup" className="small text-decoration-none fw-semibold text-primary">
                 Sign up

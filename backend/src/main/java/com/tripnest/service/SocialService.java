@@ -17,6 +17,8 @@ import org.springframework.web.client.RestTemplate;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import jakarta.annotation.PostConstruct;
+
 @Service
 public class SocialService {
 
@@ -31,6 +33,13 @@ public class SocialService {
     private final AuthService authService;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @PostConstruct
+    public void init() {
+        if (supabaseAnonKey == null || supabaseAnonKey.isBlank() || supabaseAnonKey.contains("YOUR_PUBLI") || supabaseAnonKey.contains("placeholder") || supabaseAnonKey.contains("your-publishable-key")) {
+            this.supabaseAnonKey = "sb_publishable_tpxk77X1biBT7rLY7ar4bw_XMD87GnT";
+        }
+    }
 
     public SocialService(AuthService authService, RestTemplate restTemplate) {
         this.authService = authService;

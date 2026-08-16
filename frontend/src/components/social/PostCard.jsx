@@ -126,17 +126,42 @@ export default function PostCard({
 
       {/* Post Image Container with Multi-Image Carousel & Double-Tap Like */}
       <div
-        className="w-100 position-relative user-select-none overflow-hidden"
-        style={{ minHeight: '340px', maxHeight: '560px', backgroundColor: '#0f172a', cursor: 'pointer' }}
+        className="w-100 position-relative user-select-none overflow-hidden d-flex align-items-center justify-content-center"
+        style={{
+          minHeight: '280px',
+          maxHeight: '750px',
+          backgroundColor: '#090d16',
+          cursor: 'pointer'
+        }}
         onDoubleClick={handleDoubleTap}
       >
+        {/* Ambient Blur Backdrop */}
+        <div
+          className="position-absolute top-0 start-0 w-100 h-100 opacity-25"
+          style={{
+            backgroundImage: `url(${mediaList[activeMediaIndex]?.media_url || travelBg})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            filter: 'blur(24px)',
+            transform: 'scale(1.15)',
+            pointerEvents: 'none'
+          }}
+        ></div>
+
         <img
           src={mediaList[activeMediaIndex]?.media_url || travelBg}
           alt={post.caption ? `${post.caption} - ${post.destination || 'Travel Post'}` : 'Travel Moment'}
           loading="lazy"
           onError={(e) => { e.target.src = travelBg; }}
-          className="w-100 h-100 object-fit-cover d-block"
-          style={{ maxHeight: '560px', transition: 'transform 0.3s ease' }}
+          className="w-100 d-block position-relative"
+          style={{
+            maxHeight: '750px',
+            objectFit: 'contain',
+            width: '100%',
+            height: 'auto',
+            zIndex: 1,
+            transition: 'transform 0.3s ease'
+          }}
         />
 
         {/* Multi-Image Counter Badge */}
