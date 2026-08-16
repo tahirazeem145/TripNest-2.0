@@ -18,6 +18,7 @@ import java.util.Map;
 import jakarta.annotation.PostConstruct;
 
 @Service
+@SuppressWarnings("null")
 public class AuthService {
 
     @Value("${supabase.url}")

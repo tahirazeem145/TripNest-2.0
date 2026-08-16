@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import jakarta.annotation.PostConstruct;
 
 @Service
+@SuppressWarnings("null")
 public class SocialService {
 
     private static final Logger logger = LoggerFactory.getLogger(SocialService.class);

@@ -16,6 +16,7 @@ import java.util.*;
 import jakarta.annotation.PostConstruct;
 
 @Service
+@SuppressWarnings("null")
 public class MediaService {
 
     private static final Logger logger = LoggerFactory.getLogger(MediaService.class);
