@@ -51,6 +51,7 @@ export default function SocialLayout({ children }) {
     { to: '/create', icon: 'bi-plus-square', activeIcon: 'bi-plus-square-fill', label: 'Create' },
     { to: '/saved', icon: 'bi-bookmark', activeIcon: 'bi-bookmark-fill', label: 'Saved' },
     { to: '/profile', icon: 'bi-person', activeIcon: 'bi-person-fill', label: 'Profile' },
+    { to: '/settings', icon: 'bi-gear', activeIcon: 'bi-gear-fill', label: 'Settings' },
   ];
 
   return (
@@ -73,6 +74,9 @@ export default function SocialLayout({ children }) {
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}
+            </Link>
+            <Link to="/settings" className="btn btn-light rounded-circle p-2" aria-label="Settings">
+              <i className="bi bi-gear fs-5 text-dark"></i>
             </Link>
             <Link to="/profile" className="d-flex align-items-center text-decoration-none">
               <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style={{ width: '32px', height: '32px', fontSize: '0.85rem' }}>
