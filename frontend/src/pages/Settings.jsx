@@ -4,16 +4,16 @@ import { useAuth } from '../context/AuthContext';
 import { socialService } from '../services/socialService';
 
 export default function Settings() {
-  const { user, token, logout } = useAuth();
+  const { user, token, updateUser, logout } = useAuth();
 
   // Active Tab: 'profile' | 'security' | 'privacy' | 'notifications' | 'appearance'
   const [activeTab, setActiveTab] = useState('profile');
 
   // Form States
   const [fullName, setFullName] = useState(user?.fullName || '');
-  const [bio, setBio] = useState('');
-  const [location, setLocation] = useState('');
-  const [avatarUrl, setAvatarUrl] = useState('');
+  const [bio, setBio] = useState(user?.bio || '');
+  const [location, setLocation] = useState(user?.location || '');
+  const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl || '');
 
   // Password state
   const [currentPassword, setCurrentPassword] = useState('');
@@ -21,18 +21,19 @@ export default function Settings() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPasswords, setShowPasswords] = useState(false);
 
-  // Toggles
-  const [isPrivateAccount, setIsPrivateAccount] = useState(false);
-  const [showOnlineStatus, setShowOnlineStatus] = useState(true);
-  const [allowTagging, setAllowTagging] = useState(true);
+  // Privacy Toggles (Loaded from localStorage)
+  const [privacySettings, setPrivacySettings] = useState(() => {
+    const saved = localStorage.getItem('tripnest_privacy');
+    return saved ? JSON.parse(saved) : { isPrivateAccount: false, showOnlineStatus: true, allowTagging: true };
+  });
 
-  // Notifications
-  const [emailLikes, setEmailLikes] = useState(true);
-  const [emailComments, setEmailComments] = useState(true);
-  const [emailFollows, setEmailFollows] = useState(true);
-  const [weeklyDigest, setWeeklyDigest] = useState(false);
+  // Notification Toggles (Loaded from localStorage)
+  const [notificationSettings, setNotificationSettings] = useState(() => {
+    const saved = localStorage.getItem('tripnest_notifications');
+    return saved ? JSON.parse(saved) : { emailLikes: true, emailComments: true, emailFollows: true, weeklyDigest: false };
+  });
 
-  // Theme
+  // Theme & Appearance (Loaded from localStorage)
   const [themeMode, setThemeMode] = useState(() => localStorage.getItem('tripnest_theme') || 'light');
   const [compactFeed, setCompactFeed] = useState(() => localStorage.getItem('tripnest_compact') === 'true');
 
@@ -41,7 +42,7 @@ export default function Settings() {
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
-  // Load existing profile info
+  // Sync initial profile values
   useEffect(() => {
     let isMounted = true;
     const loadProfile = async () => {
@@ -55,12 +56,34 @@ export default function Settings() {
           setAvatarUrl(p.avatarUrl || '');
         }
       } catch {
-        // Fallback
+        // Non-fatal fallback to current user context
       }
     };
     loadProfile();
     return () => { isMounted = false; };
   }, [token, user]);
+
+  // Real-time Theme Application Effect
+  useEffect(() => {
+    if (themeMode === 'dark') {
+      document.documentElement.setAttribute('data-bs-theme', 'dark');
+      document.body.classList.add('dark-theme');
+    } else {
+      document.documentElement.setAttribute('data-bs-theme', 'light');
+      document.body.classList.remove('dark-theme');
+    }
+    localStorage.setItem('tripnest_theme', themeMode);
+  }, [themeMode]);
+
+  // Real-time Compact Feed Mode Effect
+  useEffect(() => {
+    if (compactFeed) {
+      document.body.classList.add('compact-feed');
+    } else {
+      document.body.classList.remove('compact-feed');
+    }
+    localStorage.setItem('tripnest_compact', compactFeed ? 'true' : 'false');
+  }, [compactFeed]);
 
   const showToast = (msg, isError = false) => {
     if (isError) {
@@ -76,18 +99,22 @@ export default function Settings() {
     }, 4000);
   };
 
-  // Profile Save
+  // 1. Profile Save Handler
   const handleSaveProfile = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
+      // Update Backend API
       await socialService.updateProfile(token, {
         fullName,
         bio,
         location,
         avatarUrl
       });
-      showToast('Profile updated successfully!');
+      
+      // Update Global React Auth Context so header/avatar updates live
+      updateUser({ fullName, bio, location, avatarUrl });
+      showToast('Profile updated successfully across the app!');
     } catch (err) {
       showToast(err.message || 'Failed to update profile', true);
     } finally {
@@ -95,7 +122,7 @@ export default function Settings() {
     }
   };
 
-  // Password Update
+  // 2. Security & Password Update Handler
   const handleUpdatePassword = (e) => {
     e.preventDefault();
     if (!currentPassword) {
@@ -117,16 +144,24 @@ export default function Settings() {
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-      showToast('Password security settings updated successfully!');
-    }, 800);
+      showToast('Account security & password updated successfully!');
+    }, 600);
   };
 
-  // Toggle Preferences Save
-  const handleSavePreferences = (e) => {
-    e.preventDefault();
-    localStorage.setItem('tripnest_theme', themeMode);
-    localStorage.setItem('tripnest_compact', compactFeed ? 'true' : 'false');
-    showToast('Preferences and theme settings saved!');
+  // 3. Privacy Control Toggle Handler
+  const handlePrivacyToggle = (key, value) => {
+    const updated = { ...privacySettings, [key]: value };
+    setPrivacySettings(updated);
+    localStorage.setItem('tripnest_privacy', JSON.stringify(updated));
+    showToast(`Privacy setting '${key}' updated!`);
+  };
+
+  // 4. Notification Preferences Toggle Handler
+  const handleNotificationToggle = (key, value) => {
+    const updated = { ...notificationSettings, [key]: value };
+    setNotificationSettings(updated);
+    localStorage.setItem('tripnest_notifications', JSON.stringify(updated));
+    showToast('Notification preferences saved!');
   };
 
   return (
@@ -138,29 +173,29 @@ export default function Settings() {
             <h2 className="fw-bold text-dark mb-1">
               <i className="bi bi-gear-fill text-primary me-2"></i>Account Settings
             </h2>
-            <p className="text-secondary mb-0">Manage your profile, security, notifications, and preferences.</p>
+            <p className="text-secondary mb-0">Manage your profile, security, notifications, and app preferences.</p>
           </div>
         </div>
 
-        {/* Global Feedback Banner */}
+        {/* Global Toast Feedback Banners */}
         {successMsg && (
           <div className="alert alert-success border-0 rounded-4 shadow-sm mb-4 d-flex align-items-center" role="alert">
             <i className="bi bi-check-circle-fill me-2 fs-5"></i>
-            <div>{successMsg}</div>
+            <div className="fw-semibold">{successMsg}</div>
           </div>
         )}
 
         {errorMsg && (
           <div className="alert alert-danger border-0 rounded-4 shadow-sm mb-4 d-flex align-items-center" role="alert">
             <i className="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
-            <div>{errorMsg}</div>
+            <div className="fw-semibold">{errorMsg}</div>
           </div>
         )}
 
         <div className="row g-4">
-          {/* Settings Navigation Sidebar */}
+          {/* Left Settings Tabs */}
           <div className="col-12 col-md-4 col-lg-3">
-            <div className="bg-white rounded-4 shadow-sm p-3">
+            <div className="bg-white rounded-4 shadow-sm p-3 border">
               <div className="nav flex-column nav-pills gap-1">
                 
                 <button
@@ -184,7 +219,7 @@ export default function Settings() {
                   onClick={() => setActiveTab('privacy')}
                 >
                   <i className="bi bi-eye fs-5"></i>
-                  <span>Privacy</span>
+                  <span>Privacy Controls</span>
                 </button>
 
                 <button
@@ -200,21 +235,21 @@ export default function Settings() {
                   onClick={() => setActiveTab('appearance')}
                 >
                   <i className="bi bi-palette fs-5"></i>
-                  <span>Appearance</span>
+                  <span>Appearance & Theme</span>
                 </button>
 
               </div>
 
               <hr className="my-3 text-muted opacity-25" />
 
-              {/* Account Quick Stats */}
-              <div className="px-2 py-1 text-center bg-light rounded-3">
-                <div className="extra-small text-uppercase text-muted fw-bold mb-1">Logged In As</div>
+              {/* Logged in User Card */}
+              <div className="px-2 py-2 text-center bg-light rounded-3">
+                <div className="extra-small text-uppercase text-muted fw-bold mb-1">Signed In</div>
                 <div className="fw-bold text-dark text-truncate small">{user?.fullName || 'Traveler'}</div>
                 <div className="text-secondary extra-small text-truncate mb-2">{user?.email}</div>
                 <button 
                   onClick={logout}
-                  className="btn btn-outline-danger btn-sm w-100 rounded-3 fw-semibold mt-1"
+                  className="btn btn-outline-danger btn-sm w-100 rounded-3 fw-semibold"
                 >
                   <i className="bi bi-box-arrow-right me-1"></i>Sign Out
                 </button>
@@ -222,19 +257,19 @@ export default function Settings() {
             </div>
           </div>
 
-          {/* Settings Main Content */}
+          {/* Right Active Tab Content */}
           <div className="col-12 col-md-8 col-lg-9">
-            <div className="bg-white rounded-4 shadow-sm p-4">
+            <div className="bg-white rounded-4 shadow-sm p-4 border">
               
               {/* TAB 1: EDIT PROFILE */}
               {activeTab === 'profile' && (
                 <form onSubmit={handleSaveProfile}>
-                  <h4 className="fw-bold text-dark mb-3">Edit Profile</h4>
+                  <h4 className="fw-bold text-dark mb-1">Edit Profile</h4>
                   <p className="text-secondary small mb-4">Update your personal traveler information visible to the community.</p>
 
                   <div className="mb-4 d-flex align-items-center gap-3">
                     <div 
-                      className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold overflow-hidden shadow-sm"
+                      className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold overflow-hidden shadow-sm flex-shrink-0"
                       style={{ width: '64px', height: '64px', fontSize: '1.5rem' }}
                     >
                       {avatarUrl ? (
@@ -248,7 +283,7 @@ export default function Settings() {
                       <input
                         type="url"
                         className="form-control rounded-3"
-                        placeholder="https://images.unsplash.com/..."
+                        placeholder="https://images.unsplash.com/photo-..."
                         value={avatarUrl}
                         onChange={(e) => setAvatarUrl(e.target.value)}
                       />
@@ -271,7 +306,7 @@ export default function Settings() {
                     <input
                       type="text"
                       className="form-control rounded-3 p-3"
-                      placeholder="e.g. Kyoto, Japan or Paris, France"
+                      placeholder="e.g. Tokyo, Japan or New York, USA"
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
                     />
@@ -282,7 +317,7 @@ export default function Settings() {
                     <textarea
                       className="form-control rounded-3 p-3"
                       rows="3"
-                      placeholder="Tell fellow travelers about your favorite destinations and travel style..."
+                      placeholder="Tell fellow travelers about your favorite destinations..."
                       value={bio}
                       onChange={(e) => setBio(e.target.value)}
                     ></textarea>
@@ -290,7 +325,7 @@ export default function Settings() {
 
                   <div className="d-flex justify-content-end">
                     <button type="submit" className="btn btn-primary rounded-3 px-4 py-2.5 fw-bold shadow-sm" disabled={loading}>
-                      {loading ? 'Saving...' : 'Save Profile Changes'}
+                      {loading ? 'Saving Profile...' : 'Save Profile Changes'}
                     </button>
                   </div>
                 </form>
@@ -299,8 +334,8 @@ export default function Settings() {
               {/* TAB 2: SECURITY & PASSWORD */}
               {activeTab === 'security' && (
                 <form onSubmit={handleUpdatePassword}>
-                  <h4 className="fw-bold text-dark mb-3">Security & Password</h4>
-                  <p className="text-secondary small mb-4">Ensure your account remains safe with a strong password.</p>
+                  <h4 className="fw-bold text-dark mb-1">Security & Password</h4>
+                  <p className="text-secondary small mb-4">Ensure your account remains secure with a strong password.</p>
 
                   <div className="mb-3">
                     <label className="form-label small fw-semibold text-secondary">Current Password</label>
@@ -318,7 +353,7 @@ export default function Settings() {
                     <input
                       type={showPasswords ? 'text' : 'password'}
                       className="form-control rounded-3 p-3"
-                      placeholder="At least 6 characters"
+                      placeholder="Minimum 6 characters"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                     />
@@ -344,7 +379,7 @@ export default function Settings() {
                       onChange={(e) => setShowPasswords(e.target.checked)}
                     />
                     <label className="form-check-label small text-secondary" htmlFor="showPassCheck">
-                      Show passwords
+                      Show password characters
                     </label>
                   </div>
 
@@ -356,10 +391,10 @@ export default function Settings() {
                 </form>
               )}
 
-              {/* TAB 3: PRIVACY */}
+              {/* TAB 3: PRIVACY CONTROLS */}
               {activeTab === 'privacy' && (
                 <div>
-                  <h4 className="fw-bold text-dark mb-3">Privacy Controls</h4>
+                  <h4 className="fw-bold text-dark mb-1">Privacy Controls</h4>
                   <p className="text-secondary small mb-4">Manage who can see your moments and travel profile.</p>
 
                   <div className="d-flex align-items-center justify-content-between py-3 border-bottom">
@@ -371,11 +406,8 @@ export default function Settings() {
                       <input
                         className="form-check-input"
                         type="checkbox"
-                        checked={isPrivateAccount}
-                        onChange={(e) => {
-                          setIsPrivateAccount(e.target.checked);
-                          showToast(`Private profile ${e.target.checked ? 'enabled' : 'disabled'}`);
-                        }}
+                        checked={privacySettings.isPrivateAccount}
+                        onChange={(e) => handlePrivacyToggle('isPrivateAccount', e.target.checked)}
                       />
                     </div>
                   </div>
@@ -389,11 +421,8 @@ export default function Settings() {
                       <input
                         className="form-check-input"
                         type="checkbox"
-                        checked={showOnlineStatus}
-                        onChange={(e) => {
-                          setShowOnlineStatus(e.target.checked);
-                          showToast(`Online status ${e.target.checked ? 'enabled' : 'disabled'}`);
-                        }}
+                        checked={privacySettings.showOnlineStatus}
+                        onChange={(e) => handlePrivacyToggle('showOnlineStatus', e.target.checked)}
                       />
                     </div>
                   </div>
@@ -407,11 +436,8 @@ export default function Settings() {
                       <input
                         className="form-check-input"
                         type="checkbox"
-                        checked={allowTagging}
-                        onChange={(e) => {
-                          setAllowTagging(e.target.checked);
-                          showToast(`Tagging permissions ${e.target.checked ? 'enabled' : 'disabled'}`);
-                        }}
+                        checked={privacySettings.allowTagging}
+                        onChange={(e) => handlePrivacyToggle('allowTagging', e.target.checked)}
                       />
                     </div>
                   </div>
@@ -421,7 +447,7 @@ export default function Settings() {
               {/* TAB 4: NOTIFICATIONS */}
               {activeTab === 'notifications' && (
                 <div>
-                  <h4 className="fw-bold text-dark mb-3">Notification Preferences</h4>
+                  <h4 className="fw-bold text-dark mb-1">Notification Preferences</h4>
                   <p className="text-secondary small mb-4">Choose which activities trigger notifications.</p>
 
                   <div className="d-flex align-items-center justify-content-between py-3 border-bottom">
@@ -433,8 +459,8 @@ export default function Settings() {
                       <input
                         className="form-check-input"
                         type="checkbox"
-                        checked={emailLikes}
-                        onChange={(e) => setEmailLikes(e.target.checked)}
+                        checked={notificationSettings.emailLikes}
+                        onChange={(e) => handleNotificationToggle('emailLikes', e.target.checked)}
                       />
                     </div>
                   </div>
@@ -448,8 +474,8 @@ export default function Settings() {
                       <input
                         className="form-check-input"
                         type="checkbox"
-                        checked={emailComments}
-                        onChange={(e) => setEmailComments(e.target.checked)}
+                        checked={notificationSettings.emailComments}
+                        onChange={(e) => handleNotificationToggle('emailComments', e.target.checked)}
                       />
                     </div>
                   </div>
@@ -463,8 +489,8 @@ export default function Settings() {
                       <input
                         className="form-check-input"
                         type="checkbox"
-                        checked={emailFollows}
-                        onChange={(e) => setEmailFollows(e.target.checked)}
+                        checked={notificationSettings.emailFollows}
+                        onChange={(e) => handleNotificationToggle('emailFollows', e.target.checked)}
                       />
                     </div>
                   </div>
@@ -478,8 +504,8 @@ export default function Settings() {
                       <input
                         className="form-check-input"
                         type="checkbox"
-                        checked={weeklyDigest}
-                        onChange={(e) => setWeeklyDigest(e.target.checked)}
+                        checked={notificationSettings.weeklyDigest}
+                        onChange={(e) => handleNotificationToggle('weeklyDigest', e.target.checked)}
                       />
                     </div>
                   </div>
@@ -488,9 +514,9 @@ export default function Settings() {
 
               {/* TAB 5: APPEARANCE & THEME */}
               {activeTab === 'appearance' && (
-                <form onSubmit={handleSavePreferences}>
-                  <h4 className="fw-bold text-dark mb-3">Appearance & Display</h4>
-                  <p className="text-secondary small mb-4">Customize how TripNest looks on your device.</p>
+                <div>
+                  <h4 className="fw-bold text-dark mb-1">Appearance & Theme</h4>
+                  <p className="text-secondary small mb-4">Customize how TripNest looks on your device in real-time.</p>
 
                   <div className="mb-4">
                     <label className="form-label fw-bold text-dark d-block mb-2">Theme Mode</label>
@@ -512,14 +538,14 @@ export default function Settings() {
                           onClick={() => setThemeMode('dark')}
                         >
                           <i className="bi bi-moon-stars-fill fs-2 text-info mb-2"></i>
-                          <div className="fw-bold">Dark Mode</div>
-                          <div className="extra-small opacity-75">Sleek dark aesthetics</div>
+                          <div className="fw-bold text-white">Dark Mode</div>
+                          <div className="extra-small text-light opacity-75">Sleek dark aesthetics</div>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="d-flex align-items-center justify-content-between py-3 border-top mb-4">
+                  <div className="d-flex align-items-center justify-content-between py-3 border-top">
                     <div>
                       <div className="fw-bold text-dark">Compact Feed Mode</div>
                       <div className="text-muted extra-small">Display more travel posts at once with reduced padding.</div>
@@ -533,13 +559,7 @@ export default function Settings() {
                       />
                     </div>
                   </div>
-
-                  <div className="d-flex justify-content-end">
-                    <button type="submit" className="btn btn-primary rounded-3 px-4 py-2.5 fw-bold shadow-sm">
-                      Save Display Preferences
-                    </button>
-                  </div>
-                </form>
+                </div>
               )}
 
             </div>
