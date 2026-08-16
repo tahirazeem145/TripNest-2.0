@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { socialService } from '../services/socialService';
@@ -13,7 +13,7 @@ export default function Profile() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfileData = async () => {
+  const fetchProfileData = useCallback(async () => {
     if (!token) return;
     try {
       setLoading(true);
@@ -27,11 +27,11 @@ export default function Profile() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token, user?.id]);
 
   useEffect(() => {
     fetchProfileData();
-  }, [token]);
+  }, [fetchProfileData]);
 
   const handleUpdateProfile = async (updates) => {
     try {

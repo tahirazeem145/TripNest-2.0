@@ -24,7 +24,7 @@ export default function Home() {
   const [hasNewPosts, setHasNewPosts] = useState(false);
   const latestPostIdRef = useRef(null);
 
-  const fetchInitialFeed = async () => {
+  const fetchInitialFeed = useCallback(async () => {
     if (!token) return;
     try {
       setLoading(true);
@@ -47,9 +47,9 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token, logout, navigate]);
 
-  const loadMorePosts = async () => {
+  const loadMorePosts = useCallback(async () => {
     if (loadingMore || !hasMore || !token) return;
     try {
       setLoadingMore(true);
@@ -70,7 +70,7 @@ export default function Home() {
     } finally {
       setLoadingMore(false);
     }
-  };
+  }, [loadingMore, hasMore, token, offset]);
 
   // Check for new posts periodically without disturbing scroll position (every 40s)
   useEffect(() => {
@@ -83,7 +83,7 @@ export default function Home() {
             setHasNewPosts(true);
           }
         }
-      } catch (err) {
+      } catch {
         // Non-fatal
       }
     };
@@ -99,11 +99,11 @@ export default function Home() {
         loadMorePosts();
       }
     }
-  }, [loading, loadingMore, hasMore, offset, token]);
+  }, [loading, loadingMore, hasMore, loadMorePosts]);
 
   useEffect(() => {
     fetchInitialFeed();
-  }, [token]);
+  }, [fetchInitialFeed]);
 
   useEffect(() => {
     window.addEventListener('scroll', handleScroll);
@@ -131,7 +131,7 @@ export default function Home() {
       } else {
         await socialService.likePost(token, postId);
       }
-    } catch (err) {
+    } catch {
       // Rollback optimistic state
       setPosts((prev) =>
         prev.map((p) => {
@@ -165,7 +165,7 @@ export default function Home() {
       } else {
         await socialService.savePost(token, postId);
       }
-    } catch (err) {
+    } catch {
       // Rollback
       setPosts((prev) =>
         prev.map((p) => {
@@ -184,7 +184,7 @@ export default function Home() {
     setPosts((prev) => prev.filter((p) => p.id !== postId));
     try {
       await socialService.deletePost(token, postId);
-    } catch (err) {
+    } catch {
       alert('Unable to delete post. Please try again.');
       setPosts(previousPosts);
     }
@@ -201,7 +201,7 @@ export default function Home() {
         prev.map((p) => (p.id === postId ? { ...p, comments_count: p.comments_count + 1 } : p))
       );
       return comment;
-    } catch (err) {
+    } catch {
       alert('Failed to post comment. Please try again.');
       return null;
     }

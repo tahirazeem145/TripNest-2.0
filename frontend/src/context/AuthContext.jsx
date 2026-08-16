@@ -17,7 +17,7 @@ export function AuthProvider({ children }) {
         try {
           const userData = await authService.getCurrentUser(token);
           setUser(userData);
-        } catch (err) {
+        } catch {
           console.warn('[AuthContext] Stored session invalid, clearing token.');
           localStorage.removeItem('tripnest_token');
           setToken(null);

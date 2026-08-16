@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { socialService } from '../services/socialService';
@@ -15,7 +15,7 @@ export default function PostDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const fetchPost = async () => {
+  const fetchPost = useCallback(async () => {
     if (!token || !postId) return;
     try {
       setLoading(true);
@@ -27,11 +27,11 @@ export default function PostDetail() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token, postId]);
 
   useEffect(() => {
     fetchPost();
-  }, [token, postId]);
+  }, [fetchPost]);
 
   const handleLike = async (pId, isLiked) => {
     setPost(prev => {
@@ -96,7 +96,7 @@ export default function PostDetail() {
     try {
       await socialService.deletePost(token, pId);
       navigate('/home', { replace: true });
-    } catch (err) {
+    } catch {
       alert('Failed to delete post. Please try again.');
     }
   };

@@ -14,7 +14,7 @@ export default function CommentSection({ comments = [], onAddComment, postId }) 
     try {
       await onAddComment(postId, content.trim());
       setContent('');
-    } catch (err) {
+    } catch {
       setCommentError('Unable to post comment. Please try again.');
     } finally {
       setSubmitting(false);

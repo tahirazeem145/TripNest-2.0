@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { socialService } from '../services/socialService';
@@ -13,7 +13,7 @@ export default function Destination() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const fetchDestinationPosts = async () => {
+  const fetchDestinationPosts = useCallback(async () => {
     if (!token || !destination) return;
     try {
       setLoading(true);
@@ -25,11 +25,11 @@ export default function Destination() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token, destination]);
 
   useEffect(() => {
     fetchDestinationPosts();
-  }, [token, destination]);
+  }, [fetchDestinationPosts]);
 
   return (
     <SocialLayout>

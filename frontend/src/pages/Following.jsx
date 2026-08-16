@@ -24,7 +24,7 @@ export default function Following() {
   const [hasNewPosts, setHasNewPosts] = useState(false);
   const latestPostIdRef = useRef(null);
 
-  const fetchInitialFollowing = async () => {
+  const fetchInitialFollowing = useCallback(async () => {
     if (!token) return;
     try {
       setLoading(true);
@@ -47,9 +47,9 @@ export default function Following() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token, logout, navigate]);
 
-  const loadMoreFollowing = async () => {
+  const loadMoreFollowing = useCallback(async () => {
     if (loadingMore || !hasMore || !token) return;
     try {
       setLoadingMore(true);
@@ -70,7 +70,7 @@ export default function Following() {
     } finally {
       setLoadingMore(false);
     }
-  };
+  }, [loadingMore, hasMore, token, offset]);
 
   // Check for new followed-user posts periodically without disturbing scroll position (every 40s)
   useEffect(() => {
@@ -83,7 +83,7 @@ export default function Following() {
             setHasNewPosts(true);
           }
         }
-      } catch (err) {
+      } catch {
         // Non-fatal
       }
     };
@@ -98,11 +98,11 @@ export default function Following() {
         loadMoreFollowing();
       }
     }
-  }, [loading, loadingMore, hasMore, offset, token]);
+  }, [loading, loadingMore, hasMore, loadMoreFollowing]);
 
   useEffect(() => {
     fetchInitialFollowing();
-  }, [token]);
+  }, [fetchInitialFollowing]);
 
   useEffect(() => {
     window.addEventListener('scroll', handleScroll);
@@ -179,7 +179,7 @@ export default function Following() {
     setPosts((prev) => prev.filter((p) => p.id !== postId));
     try {
       await socialService.deletePost(token, postId);
-    } catch (err) {
+    } catch {
       alert('Unable to delete post. Please try again.');
       setPosts(previousPosts);
     }

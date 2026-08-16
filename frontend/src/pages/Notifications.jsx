@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { socialService } from '../services/socialService';
 import SocialLayout from '../layouts/SocialLayout';
@@ -10,7 +10,7 @@ export default function Notifications() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     if (!token) return;
     try {
       setLoading(true);
@@ -21,11 +21,11 @@ export default function Notifications() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     fetchNotifications();
-  }, [token]);
+  }, [fetchNotifications]);
 
   const handleMarkAllRead = async () => {
     try {

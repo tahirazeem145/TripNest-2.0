@@ -19,7 +19,7 @@ export default function SocialLayout({ children }) {
           const unread = list.filter((n) => !n.is_read).length;
           setUnreadCount(unread);
         }
-      } catch (err) {
+      } catch {
         // Non-fatal
       }
     };

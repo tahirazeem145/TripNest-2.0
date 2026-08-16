@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { socialService } from '../services/socialService';
 import SocialLayout from '../layouts/SocialLayout';
-import ProfileHeader from '../components/social/ProfileHeader';
 import PostGrid from '../components/social/PostGrid';
 import LoadingSpinner from '../components/social/LoadingSpinner';
 
@@ -19,7 +18,7 @@ export default function TravelerProfile() {
 
   const isSelf = user?.id === userId || userId === 'me';
 
-  const fetchTravelerData = async () => {
+  const fetchTravelerData = useCallback(async () => {
     if (!token || !userId) return;
     try {
       setLoading(true);
@@ -34,7 +33,7 @@ export default function TravelerProfile() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token, userId]);
 
   useEffect(() => {
     if (isSelf) {
@@ -42,7 +41,7 @@ export default function TravelerProfile() {
       return;
     }
     fetchTravelerData();
-  }, [token, userId]);
+  }, [isSelf, navigate, fetchTravelerData]);
 
   const handleFollowToggle = async () => {
     if (!profile) return;

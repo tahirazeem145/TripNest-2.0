@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { socialService } from '../services/socialService';
@@ -15,7 +15,7 @@ export default function Saved() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const fetchSaved = async () => {
+  const fetchSaved = useCallback(async () => {
     if (!token) return;
     try {
       setLoading(true);
@@ -32,11 +32,11 @@ export default function Saved() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token, logout, navigate]);
 
   useEffect(() => {
     fetchSaved();
-  }, [token]);
+  }, [fetchSaved]);
 
   const handleUnsave = async (postId) => {
     setPosts((prev) => prev.filter((p) => p.id !== postId));

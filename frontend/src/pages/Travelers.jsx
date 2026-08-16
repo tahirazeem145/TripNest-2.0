@@ -77,7 +77,7 @@ export default function Travelers() {
         setTravelers(res.travelers || []);
         setPosts(res.posts || []);
         setDestinations(res.destinations || []);
-      } catch (err) {
+      } catch {
         setError('Unable to perform search. Please check your connection.');
       } finally {
         setLoading(false);

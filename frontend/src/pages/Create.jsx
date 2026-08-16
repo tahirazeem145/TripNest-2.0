@@ -42,6 +42,7 @@ export default function Create() {
       });
       if (urlPreview) URL.revokeObjectURL(urlPreview);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleFilesSelect = (e) => {
