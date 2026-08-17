@@ -115,7 +115,8 @@ public class SocialController {
         if (content.isEmpty()) {
             throw new IllegalArgumentException("Comment content cannot be empty.");
         }
-        CommentDto comment = socialService.addComment(authHeader, id, content);
+        String parentId = (body != null) ? body.getParentId() : null;
+        CommentDto comment = socialService.addComment(authHeader, id, content, parentId);
         return ResponseEntity.status(HttpStatus.CREATED).body(comment);
     }
 
@@ -124,6 +125,24 @@ public class SocialController {
             @RequestHeader(value = "Authorization", required = false) String authHeader,
             @PathVariable String id) {
         return ResponseEntity.ok(socialService.getPostComments(authHeader, id));
+    }
+
+    @DeleteMapping("/comments/{id}")
+    public ResponseEntity<Void> deleteComment(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @PathVariable String id) {
+        socialService.deleteComment(authHeader, id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/comments/{id}")
+    public ResponseEntity<CommentDto> updateComment(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @PathVariable String id,
+            @RequestBody CommentRequest body) {
+        String content = (body != null && body.getContent() != null) ? body.getContent().trim() : "";
+        CommentDto updated = socialService.updateComment(authHeader, id, content);
+        return ResponseEntity.ok(updated);
     }
 
     // Follows

@@ -74,8 +74,8 @@ export default function PostDetail() {
     }
   };
 
-  const handleAddComment = async (pId, content) => {
-    const newComment = await socialService.addComment(token, pId, content);
+  const handleAddComment = async (pId, content, parentId = null) => {
+    const newComment = await socialService.addComment(token, pId, content, parentId);
     if (newComment) {
       setPost(prev => {
         if (!prev) return prev;

@@ -164,6 +164,38 @@ export default function Settings() {
     showToast('Notification preferences saved!');
   };
 
+  // Avatar file upload handler
+  const avatarFileInputRef = React.useRef(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  const handleAvatarFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(file.type.toLowerCase())) {
+      showToast('Unsupported image format. Please select JPG, PNG, or WEBP.', true);
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('Avatar image size must be under 5 MB.', true);
+      return;
+    }
+
+    setUploadingAvatar(true);
+    try {
+      const res = await socialService.uploadMedia(token, file, 'avatar');
+      const newUrl = res.imageUrl || res.url;
+      setAvatarUrl(newUrl);
+      showToast('Avatar image uploaded successfully!');
+    } catch (err) {
+      showToast(err.message || 'Failed to upload avatar image', true);
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  // TAB 1: EDIT PROFILE
   return (
     <SocialLayout>
       <div className="py-2">
@@ -269,26 +301,66 @@ export default function Settings() {
 
                   <div className="mb-4 d-flex align-items-center gap-3">
                     <div 
-                      className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold overflow-hidden shadow-sm flex-shrink-0"
-                      style={{ width: '64px', height: '64px', fontSize: '1.5rem' }}
+                      className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold overflow-hidden shadow-sm flex-shrink-0 position-relative cursor-pointer"
+                      style={{ width: '72px', height: '72px', fontSize: '1.75rem' }}
+                      onClick={() => avatarFileInputRef.current?.click()}
+                      title="Click to upload profile photo"
                     >
                       {avatarUrl ? (
                         <img src={avatarUrl} alt="Avatar" className="w-100 h-100 object-fit-cover" />
                       ) : (
                         fullName ? fullName.charAt(0).toUpperCase() : 'U'
                       )}
+                      {uploadingAvatar && (
+                        <div className="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center">
+                          <div className="spinner-border spinner-border-sm text-white" role="status"></div>
+                        </div>
+                      )}
                     </div>
                     <div className="flex-grow-1">
-                      <label className="form-label small fw-semibold text-secondary mb-1">Avatar Image URL</label>
+                      <label className="form-label small fw-semibold text-secondary mb-1">Profile Photo</label>
+                      <div className="d-flex gap-2">
+                        <button
+                          type="button"
+                          className="btn btn-outline-primary btn-sm rounded-3 fw-semibold"
+                          onClick={() => avatarFileInputRef.current?.click()}
+                          disabled={uploadingAvatar}
+                        >
+                          <i className="bi bi-camera-fill me-1"></i>
+                          {uploadingAvatar ? 'Uploading...' : 'Upload Photo'}
+                        </button>
+                        {avatarUrl && (
+                          <button
+                            type="button"
+                            className="btn btn-outline-danger btn-sm rounded-3 fw-semibold"
+                            onClick={() => setAvatarUrl('')}
+                          >
+                            <i className="bi bi-trash me-1"></i>Remove
+                          </button>
+                        )}
+                      </div>
                       <input
-                        type="url"
-                        className="form-control rounded-3"
-                        placeholder="https://images.unsplash.com/photo-..."
-                        value={avatarUrl}
-                        onChange={(e) => setAvatarUrl(e.target.value)}
+                        type="file"
+                        ref={avatarFileInputRef}
+                        onChange={handleAvatarFileUpload}
+                        accept="image/jpeg,image/png,image/webp"
+                        className="d-none"
                       />
+                      <div className="extra-small text-muted mt-1">Supports JPG, PNG, WEBP up to 5 MB</div>
                     </div>
                   </div>
+
+                  <div className="mb-3">
+                    <label className="form-label small fw-semibold text-secondary">Avatar Image URL (Optional Direct Link)</label>
+                    <input
+                      type="url"
+                      className="form-control rounded-3 p-2.5"
+                      placeholder="https://images.unsplash.com/photo-..."
+                      value={avatarUrl}
+                      onChange={(e) => setAvatarUrl(e.target.value)}
+                    />
+                  </div>
+
 
                   <div className="mb-3">
                     <label className="form-label small fw-semibold text-secondary">Full Name</label>

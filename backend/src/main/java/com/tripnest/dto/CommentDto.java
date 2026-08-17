@@ -21,6 +21,9 @@ public class CommentDto {
     @JsonProperty("updated_at")
     private String updatedAt;
 
+    @JsonProperty("parent_id")
+    private String parentId;
+
     private UserDto author;
 
     public CommentDto() {}
@@ -33,6 +36,9 @@ public class CommentDto {
 
     public String getPostId() { return postId; }
     public void setPostId(String postId) { this.postId = postId; }
+
+    public String getParentId() { return parentId; }
+    public void setParentId(String parentId) { this.parentId = parentId; }
 
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }

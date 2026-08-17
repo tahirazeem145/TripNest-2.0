@@ -124,16 +124,39 @@ export const socialService = {
   },
 
   // Comments
-  addComment: async (token, postId, content) => {
+  addComment: async (token, postId, content, parentId = null) => {
+    const payload = { content };
+    if (parentId) payload.parent_id = parentId;
     const response = await fetch(`${API_BASE_URL}/posts/${postId}/comments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({ content })
+      body: JSON.stringify(payload)
     });
     if (!response.ok) throw new Error('Failed to add comment');
+    return await response.json();
+  },
+
+  deleteComment: async (token, commentId) => {
+    const response = await fetch(`${API_BASE_URL}/comments/${commentId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!response.ok) throw new Error('Failed to delete comment');
+  },
+
+  editComment: async (token, commentId, content) => {
+    const response = await fetch(`${API_BASE_URL}/comments/${commentId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ content })
+    });
+    if (!response.ok) throw new Error('Failed to edit comment');
     return await response.json();
   },
 

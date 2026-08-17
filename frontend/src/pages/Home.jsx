@@ -194,9 +194,9 @@ export default function Home() {
     return await socialService.getComments(token, postId);
   };
 
-  const handleAddComment = async (postId, content) => {
+  const handleAddComment = async (postId, content, parentId = null) => {
     try {
-      const comment = await socialService.addComment(token, postId, content);
+      const comment = await socialService.addComment(token, postId, content, parentId);
       setPosts((prev) =>
         prev.map((p) => (p.id === postId ? { ...p, comments_count: p.comments_count + 1 } : p))
       );

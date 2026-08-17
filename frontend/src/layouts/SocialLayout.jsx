@@ -58,28 +58,28 @@ export default function SocialLayout({ children }) {
     <div className="min-vh-100 bg-light-gray d-flex flex-column">
       
       {/* Mobile Top Header */}
-      <header className="d-lg-none navbar navbar-white bg-white border-bottom px-3 py-2 sticky-top shadow-sm">
+      <header className="d-lg-none navbar bg-white border-bottom px-3 py-2 sticky-top shadow-sm">
         <div className="container-fluid d-flex justify-content-between align-items-center">
           <Link to="/home" className="d-flex align-items-center text-decoration-none">
             <img src="/logo.png" alt="TripNest" style={{ height: '34px', objectFit: 'contain' }} className="me-2" />
             <span className="brand-logo fs-3 fw-bold text-primary">TripNest</span>
-            <span className="fs-3 fw-bold text-dark ms-1">2.0</span>
+            <span className="fs-3 fw-bold text-body ms-1">2.0</span>
           </Link>
           
           <div className="d-flex align-items-center gap-2">
-            <Link to="/notifications" className="btn btn-light rounded-circle p-2 position-relative" aria-label="Notifications">
-              <i className="bi bi-heart fs-5 text-dark"></i>
+            <Link to="/notifications" className="btn btn-theme-action rounded-circle p-2 position-relative" aria-label="Notifications" title="Notifications">
+              <i className="bi bi-heart fs-5 theme-icon"></i>
               {unreadCount > 0 && (
                 <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ fontSize: '0.65rem' }}>
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}
             </Link>
-            <Link to="/settings" className="btn btn-light rounded-circle p-2" aria-label="Settings">
-              <i className="bi bi-gear fs-5 text-dark"></i>
+            <Link to="/settings" className="btn btn-theme-action rounded-circle p-2" aria-label="Settings" title="Settings">
+              <i className="bi bi-gear fs-5 theme-icon"></i>
             </Link>
-            <Link to="/profile" className="d-flex align-items-center text-decoration-none">
-              <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style={{ width: '32px', height: '32px', fontSize: '0.85rem' }}>
+            <Link to="/profile" className="d-flex align-items-center text-decoration-none ms-1">
+              <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" style={{ width: '34px', height: '34px', fontSize: '0.85rem' }}>
                 {user?.fullName ? user.fullName.charAt(0).toUpperCase() : 'U'}
               </div>
             </Link>
@@ -98,7 +98,7 @@ export default function SocialLayout({ children }) {
               <Link to="/home" className="d-flex align-items-center text-decoration-none mb-4 pb-2 px-2">
                 <img src="/logo.png" alt="TripNest" style={{ height: '40px', objectFit: 'contain' }} className="me-2" />
                 <span className="brand-logo fs-3 fw-bold text-primary">TripNest</span>
-                <span className="fs-3 fw-bold text-dark ms-1">2.0</span>
+                <span className="fs-3 fw-bold text-body ms-1">2.0</span>
               </Link>
 
               {/* Navigation Links */}
@@ -108,8 +108,8 @@ export default function SocialLayout({ children }) {
                     key={item.to}
                     to={item.to}
                     className={({ isActive }) =>
-                      `nav-link d-flex align-items-center justify-content-between px-3 py-2 rounded-4 fw-medium text-dark transition-all ${
-                        isActive ? 'bg-primary text-white shadow-sm fw-bold' : 'hover-bg-light text-secondary'
+                      `nav-link d-flex align-items-center justify-content-between px-3 py-2 rounded-4 fw-medium transition-all ${
+                        isActive ? 'bg-primary text-white shadow-sm fw-bold' : 'hover-bg-light text-body'
                       }`
                     }
                   >
@@ -134,17 +134,17 @@ export default function SocialLayout({ children }) {
             {/* Bottom User Profile Card & Sign Out */}
             <div className="pt-3 border-top">
               <div className="d-flex align-items-center justify-content-between mb-3 px-2">
-                <Link to="/profile" className="d-flex align-items-center text-decoration-none text-dark flex-grow-1 overflow-hidden me-2">
+                <Link to="/profile" className="d-flex align-items-center text-decoration-none text-body flex-grow-1 overflow-hidden me-2">
                   <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold me-2 flex-shrink-0" style={{ width: '38px', height: '38px' }}>
                     {user?.fullName ? user.fullName.charAt(0).toUpperCase() : 'U'}
                   </div>
                   <div className="overflow-hidden">
-                    <div className="fw-bold small text-truncate">{user?.fullName || 'Traveler'}</div>
+                    <div className="fw-bold small text-truncate text-body">{user?.fullName || 'Traveler'}</div>
                     <div className="text-muted extra-small text-truncate">{user?.email}</div>
                   </div>
                 </Link>
                 
-                <button onClick={handleLogout} className="btn btn-light btn-sm rounded-circle p-2" title="Sign Out">
+                <button onClick={handleLogout} className="btn btn-theme-action btn-sm rounded-circle p-2" title="Sign Out">
                   <i className="bi bi-box-arrow-right text-danger"></i>
                 </button>
               </div>
@@ -164,11 +164,11 @@ export default function SocialLayout({ children }) {
       {/* Mobile Bottom Navigation Bar */}
       <nav className="d-lg-none fixed-bottom bg-white border-top py-2 px-3 shadow-lg z-3">
         <div className="d-flex justify-content-around align-items-center">
-          <NavLink to="/home" className={({ isActive }) => `text-decoration-none p-2 ${isActive ? 'text-primary' : 'text-secondary'}`}>
+          <NavLink to="/home" className={({ isActive }) => `text-decoration-none p-2 ${isActive ? 'text-primary fw-bold' : 'text-secondary'}`}>
             <i className="bi bi-house-door fs-4"></i>
           </NavLink>
           
-          <NavLink to="/following" className={({ isActive }) => `text-decoration-none p-2 ${isActive ? 'text-primary' : 'text-secondary'}`}>
+          <NavLink to="/following" className={({ isActive }) => `text-decoration-none p-2 ${isActive ? 'text-primary fw-bold' : 'text-secondary'}`}>
             <i className="bi bi-people fs-4"></i>
           </NavLink>
 
@@ -176,11 +176,11 @@ export default function SocialLayout({ children }) {
             <i className="bi bi-plus-lg fs-4 text-white"></i>
           </NavLink>
 
-          <NavLink to="/travelers" className={({ isActive }) => `text-decoration-none p-2 ${isActive ? 'text-primary' : 'text-secondary'}`}>
+          <NavLink to="/travelers" className={({ isActive }) => `text-decoration-none p-2 ${isActive ? 'text-primary fw-bold' : 'text-secondary'}`}>
             <i className="bi bi-compass fs-4"></i>
           </NavLink>
 
-          <NavLink to="/profile" className={({ isActive }) => `text-decoration-none p-2 ${isActive ? 'text-primary' : 'text-secondary'}`}>
+          <NavLink to="/profile" className={({ isActive }) => `text-decoration-none p-2 ${isActive ? 'text-primary fw-bold' : 'text-secondary'}`}>
             <i className="bi bi-person fs-4"></i>
           </NavLink>
         </div>

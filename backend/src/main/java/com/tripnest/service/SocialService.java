@@ -53,14 +53,31 @@ public class SocialService {
     public PostResponse createPost(String authHeader, PostRequest request) {
         UserDto user = extractAuthenticatedUser(authHeader);
 
-        // Determine primary image URL (from request.imageUrl or first item in media)
-        String primaryImageUrl = request.getImageUrl();
-        if ((primaryImageUrl == null || primaryImageUrl.isBlank()) && request.getMedia() != null && !request.getMedia().isEmpty()) {
-            primaryImageUrl = request.getMedia().get(0).getMediaUrl();
+        List<String> imageUrls = new ArrayList<>();
+        if (request.getMedia() != null && !request.getMedia().isEmpty()) {
+            for (PostMediaDto m : request.getMedia()) {
+                if (m.getMediaUrl() != null && !m.getMediaUrl().isBlank()) {
+                    imageUrls.add(m.getMediaUrl().trim());
+                }
+            }
         }
 
-        if (primaryImageUrl == null || primaryImageUrl.isBlank()) {
+        if (imageUrls.isEmpty() && request.getImageUrl() != null && !request.getImageUrl().isBlank()) {
+            imageUrls.add(request.getImageUrl().trim());
+        }
+
+        if (imageUrls.isEmpty()) {
             throw new IllegalArgumentException("At least one image is required.");
+        }
+
+        String primaryImageUrl = imageUrls.get(0);
+        String storedImageUrlValue = primaryImageUrl;
+        if (imageUrls.size() > 1) {
+            try {
+                storedImageUrlValue = objectMapper.writeValueAsString(imageUrls);
+            } catch (Exception e) {
+                storedImageUrlValue = primaryImageUrl;
+            }
         }
 
         String url = supabaseUrl + "/rest/v1/posts";
@@ -69,7 +86,7 @@ public class SocialService {
 
         Map<String, Object> body = new HashMap<>();
         body.put("user_id", user.getId());
-        body.put("image_url", primaryImageUrl);
+        body.put("image_url", storedImageUrlValue);
         body.put("caption", request.getCaption());
         body.put("destination", request.getDestination());
 
@@ -108,14 +125,17 @@ public class SocialService {
                                 mediaList.addAll(insertedMedia);
                             }
                         } catch (Exception e) {
-                            logger.warn("[POSTS] Error saving post_media rows (fallback to primary): {}", e.getMessage());
+                            logger.warn("[POSTS] Error saving post_media rows (fallback to image_url JSON array): {}", e.getMessage());
                         }
                     }
                 }
 
-                // Fallback: if no separate post_media created, use primaryImageUrl
+                // Fallback: if no separate post_media created, parse imageUrls list
                 if (mediaList.isEmpty()) {
-                    mediaList.add(new PostMediaDto(primaryImageUrl, 0));
+                    int order = 0;
+                    for (String imgUrl : imageUrls) {
+                        mediaList.add(new PostMediaDto(imgUrl, order++));
+                    }
                 }
                 created.setMedia(mediaList);
                 return created;
@@ -390,9 +410,13 @@ public class SocialService {
     }
 
     /**
-     * Add Comment to Post
+     * Add Comment to Post (supports optional parentId for replies)
      */
     public CommentDto addComment(String authHeader, String postId, String content) {
+        return addComment(authHeader, postId, content, null);
+    }
+
+    public CommentDto addComment(String authHeader, String postId, String content, String parentId) {
         UserDto currentUser = extractAuthenticatedUser(authHeader);
 
         String url = supabaseUrl + "/rest/v1/comments";
@@ -403,6 +427,9 @@ public class SocialService {
         body.put("user_id", currentUser.getId());
         body.put("post_id", postId);
         body.put("content", content);
+        if (parentId != null && !parentId.isBlank()) {
+            body.put("parent_id", parentId.trim());
+        }
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
@@ -434,6 +461,97 @@ public class SocialService {
                 throw (RuntimeException) e;
             }
             throw new RuntimeException("Unable to add comment.");
+        }
+    }
+
+    /**
+     * Delete Comment (Comment author or Post author)
+     */
+    public void deleteComment(String authHeader, String commentId) {
+        UserDto currentUser = extractAuthenticatedUser(authHeader);
+
+        String fetchUrl = supabaseUrl + "/rest/v1/comments?id=eq." + commentId + "&select=*";
+        HttpHeaders headers = createAuthenticatedHeaders(authHeader);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(fetchUrl, HttpMethod.GET, entity, String.class);
+            List<CommentDto> list = objectMapper.readValue(response.getBody(), new TypeReference<List<CommentDto>>() {});
+            if (list == null || list.isEmpty()) {
+                throw new ResourceNotFoundException("Comment not found.");
+            }
+            CommentDto comment = list.get(0);
+            
+            boolean isCommentOwner = currentUser.getId().equals(comment.getUserId());
+            boolean isPostOwner = false;
+            try {
+                PostResponse post = getPostById(authHeader, comment.getPostId());
+                isPostOwner = currentUser.getId().equals(post.getUserId());
+            } catch (Exception ignored) {}
+
+            if (!isCommentOwner && !isPostOwner) {
+                throw new ForbiddenException("You do not have permission to delete this comment.");
+            }
+
+            String deleteUrl = supabaseUrl + "/rest/v1/comments?id=eq." + commentId;
+            restTemplate.exchange(deleteUrl, HttpMethod.DELETE, entity, String.class);
+        } catch (HttpClientErrorException e) {
+            handleRestError(e);
+        } catch (Exception e) {
+            if (e instanceof RuntimeException && !(e instanceof HttpClientErrorException)) {
+                throw (RuntimeException) e;
+            }
+            throw new RuntimeException("Unable to delete comment.");
+        }
+    }
+
+    /**
+     * Update Comment (Comment author only)
+     */
+    public CommentDto updateComment(String authHeader, String commentId, String content) {
+        UserDto currentUser = extractAuthenticatedUser(authHeader);
+        if (content == null || content.trim().isEmpty()) {
+            throw new IllegalArgumentException("Comment content cannot be empty.");
+        }
+
+        String fetchUrl = supabaseUrl + "/rest/v1/comments?id=eq." + commentId + "&select=*";
+        HttpHeaders headers = createAuthenticatedHeaders(authHeader);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(fetchUrl, HttpMethod.GET, entity, String.class);
+            List<CommentDto> list = objectMapper.readValue(response.getBody(), new TypeReference<List<CommentDto>>() {});
+            if (list == null || list.isEmpty()) {
+                throw new ResourceNotFoundException("Comment not found.");
+            }
+            CommentDto existing = list.get(0);
+            if (!currentUser.getId().equals(existing.getUserId())) {
+                throw new ForbiddenException("You can only edit your own comments.");
+            }
+
+            String patchUrl = supabaseUrl + "/rest/v1/comments?id=eq." + commentId;
+            headers.set("Prefer", "return=representation");
+
+            Map<String, Object> body = new HashMap<>();
+            body.put("content", content.trim());
+            HttpEntity<Map<String, Object>> patchEntity = new HttpEntity<>(body, headers);
+
+            ResponseEntity<String> patchResp = restTemplate.exchange(patchUrl, HttpMethod.PATCH, patchEntity, String.class);
+            List<CommentDto> updatedList = objectMapper.readValue(patchResp.getBody(), new TypeReference<List<CommentDto>>() {});
+            if (updatedList != null && !updatedList.isEmpty()) {
+                CommentDto updated = updatedList.get(0);
+                updated.setAuthor(currentUser);
+                return updated;
+            }
+            throw new RuntimeException("Failed to update comment.");
+        } catch (HttpClientErrorException e) {
+            handleRestError(e);
+            throw new RuntimeException("Failed to update comment.");
+        } catch (Exception e) {
+            if (e instanceof RuntimeException && !(e instanceof HttpClientErrorException)) {
+                throw (RuntimeException) e;
+            }
+            throw new RuntimeException("Unable to update comment.");
         }
     }
 
@@ -835,14 +953,35 @@ public class SocialService {
                 p.setLiked(myLikedPostIds.contains(p.getId()));
                 p.setSaved(mySavedPostIds.contains(p.getId()));
 
-                // Populate media list (or fallback to primary image_url)
+                // Populate media list (or fallback to image_url JSON array/string)
                 List<PostMediaDto> pMedia = postMediaMap.get(p.getId());
                 if (pMedia != null && !pMedia.isEmpty()) {
                     p.setMedia(pMedia);
                 } else if (p.getImageUrl() != null && !p.getImageUrl().isBlank()) {
-                    List<PostMediaDto> single = new ArrayList<>();
-                    single.add(new PostMediaDto(p.getImageUrl(), 0));
-                    p.setMedia(single);
+                    List<PostMediaDto> fallbackMedia = new ArrayList<>();
+                    String imgStr = p.getImageUrl().trim();
+                    if (imgStr.startsWith("[") && imgStr.endsWith("]")) {
+                        try {
+                            List<String> parsedUrls = objectMapper.readValue(imgStr, new TypeReference<List<String>>() {});
+                            int order = 0;
+                            for (String u : parsedUrls) {
+                                fallbackMedia.add(new PostMediaDto(u.trim(), order++));
+                            }
+                        } catch (Exception ignored) {
+                            fallbackMedia.add(new PostMediaDto(imgStr, 0));
+                        }
+                    } else if (imgStr.contains(",")) {
+                        String[] parts = imgStr.split(",");
+                        int order = 0;
+                        for (String part : parts) {
+                            if (!part.trim().isEmpty()) {
+                                fallbackMedia.add(new PostMediaDto(part.trim(), order++));
+                            }
+                        }
+                    } else {
+                        fallbackMedia.add(new PostMediaDto(imgStr, 0));
+                    }
+                    p.setMedia(fallbackMedia);
                 }
             }
         } catch (Exception e) {
