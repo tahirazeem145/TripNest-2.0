@@ -5,16 +5,16 @@ import travelBg from '../../assets/travel_bg.jpg';
 export default function PostGrid({ posts = [], onPostClick }) {
   if (posts.length === 0) {
     return (
-      <div className="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
-        <i className="bi bi-camera display-3 text-secondary opacity-50 mb-2"></i>
-        <h5 className="fw-bold text-dark">No moments posted</h5>
-        <p className="text-secondary small mb-0">Travel posts and captured destinations will appear in this gallery.</p>
+      <div className="glass-card p-5 text-center">
+        <i className="bi bi-camera display-4 text-info opacity-50 mb-2"></i>
+        <h5 className="fw-bold text-white font-heading">No moments posted</h5>
+        <p className="text-muted small mb-0">Captured destinations and travel memories will appear in this passport gallery.</p>
       </div>
     );
   }
 
   return (
-    <div className="row g-2 g-sm-3">
+    <div className="row g-3">
       {posts.map((post) => {
         const isMulti = post.media && post.media.length > 1;
         const thumbnail =
@@ -32,8 +32,8 @@ export default function PostGrid({ posts = [], onPostClick }) {
                   onPostClick(post);
                 }
               }}
-              className="rounded-3 overflow-hidden position-relative ratio ratio-1x1 shadow-sm style-card d-block"
-              style={{ backgroundColor: '#0f172a' }}
+              className="rounded-4 overflow-hidden position-relative ratio ratio-1x1 glass-card d-block shadow"
+              style={{ backgroundColor: '#060a12', border: '1px solid var(--tn-border)' }}
             >
               <img
                 src={thumbnail}
@@ -41,25 +41,34 @@ export default function PostGrid({ posts = [], onPostClick }) {
                 loading="lazy"
                 onError={(e) => { e.target.src = travelBg; }}
                 className="w-100 h-100 object-fit-cover"
+                style={{ transition: 'transform 0.3s ease' }}
               />
 
               {/* Multi-Image Indicator Icon */}
               {isMulti && (
-                <div className="position-absolute top-0 end-0 m-2 text-white drop-shadow" title="Multiple photos">
-                  <i className="bi bi-images fs-6"></i>
+                <div className="position-absolute top-0 end-0 m-2 text-white badge bg-dark bg-opacity-75 rounded-pill px-2 py-1" style={{ fontSize: '0.65rem' }}>
+                  <i className="bi bi-images me-1"></i>Album
                 </div>
               )}
 
-              {/* Destination Tag */}
-              {post.destination && (
-                <div
-                  className="position-absolute bottom-0 start-0 end-0 p-1 p-sm-2 text-white extra-small text-truncate"
-                  style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)' }}
-                >
-                  <i className="bi bi-geo-alt-fill me-1"></i>
-                  {post.destination}
-                </div>
-              )}
+              {/* Destination Tag & Overlay */}
+              <div
+                className="position-absolute bottom-0 start-0 end-0 p-2 text-white extra-small text-truncate d-flex align-items-center justify-content-between"
+                style={{ background: 'linear-gradient(to top, rgba(6,10,18,0.9), transparent)', fontSize: '0.75rem' }}
+              >
+                {post.destination ? (
+                  <span className="text-truncate">
+                    <i className="bi bi-geo-alt-fill text-info me-1"></i>{post.destination}
+                  </span>
+                ) : (
+                  <span>Moment</span>
+                )}
+                {post.likes_count > 0 && (
+                  <span className="ms-1 text-danger">
+                    <i className="bi bi-heart-fill me-1"></i>{post.likes_count}
+                  </span>
+                )}
+              </div>
             </Link>
           </div>
         );
