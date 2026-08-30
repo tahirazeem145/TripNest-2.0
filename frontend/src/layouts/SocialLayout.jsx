@@ -61,7 +61,7 @@ export default function SocialLayout({ children }) {
       <header className="d-lg-none navbar bg-white border-bottom px-3 py-2 sticky-top shadow-sm">
         <div className="container-fluid d-flex justify-content-between align-items-center">
           <Link to="/home" className="d-flex align-items-center text-decoration-none">
-            <img src="/logo.png" alt="TripNest" style={{ height: '34px', objectFit: 'contain' }} className="me-2" />
+            <img src="/logo.svg" alt="TripNest" style={{ height: '36px', width: '36px', objectFit: 'contain' }} className="me-2 filter-drop-shadow" />
             <span className="brand-logo fs-3 fw-bold text-primary">TripNest</span>
             <span className="fs-3 fw-bold text-body ms-1">2.0</span>
           </Link>
@@ -96,7 +96,7 @@ export default function SocialLayout({ children }) {
             <div>
               {/* Brand Logo */}
               <Link to="/home" className="d-flex align-items-center text-decoration-none mb-4 pb-2 px-2">
-                <img src="/logo.png" alt="TripNest" style={{ height: '40px', objectFit: 'contain' }} className="me-2" />
+                <img src="/logo.svg" alt="TripNest" style={{ height: '42px', width: '42px', objectFit: 'contain' }} className="me-2 filter-drop-shadow" />
                 <span className="brand-logo fs-3 fw-bold text-primary">TripNest</span>
                 <span className="fs-3 fw-bold text-body ms-1">2.0</span>
               </Link>

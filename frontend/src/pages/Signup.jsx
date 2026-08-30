@@ -83,7 +83,7 @@ function Signup() {
             }}
           >
             <div className="d-flex align-items-center">
-              <img src="/logo.png" alt="TripNest" style={{ height: '44px', objectFit: 'contain' }} className="me-2 filter-drop-shadow" />
+              <img src="/logo.svg" alt="TripNest" style={{ height: '46px', width: '46px', objectFit: 'contain' }} className="me-2 filter-drop-shadow" />
               <span className="brand-logo-light fs-2 fw-bold">TripNest</span>
               <span className="fs-2 fw-bold text-teal ms-1">2.0</span>
             </div>
@@ -110,7 +110,7 @@ function Signup() {
           <div className="login-card w-100 p-4 p-sm-5 bg-white rounded-4 shadow-sm" style={{ maxWidth: '490px' }}>
             
             <div className="d-lg-none text-center mb-4">
-              <img src="/logo.png" alt="TripNest" style={{ height: '48px', objectFit: 'contain' }} className="mb-2 d-block mx-auto" />
+              <img src="/logo.svg" alt="TripNest" style={{ height: '48px', width: '48px', objectFit: 'contain' }} className="mb-2 d-block mx-auto filter-drop-shadow" />
               <span className="brand-logo fs-2 fw-bold text-primary">TripNest</span>
               <span className="fs-2 fw-bold text-dark"> 2.0</span>
             </div>

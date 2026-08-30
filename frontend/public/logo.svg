@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <!-- Background Glow Filter -->
+    <filter id="electricGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    
+    <!-- Gradients -->
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#0b1120" />
+    </linearGradient>
+
+    <linearGradient id="blueGradPrimary" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#60a5fa" />
+      <stop offset="50%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#1d4ed8" />
+    </linearGradient>
+
+    <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a5f3fc" />
+      <stop offset="50%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#0284c7" />
+    </linearGradient>
+
+    <linearGradient id="flightGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#60a5fa" />
+    </linearGradient>
+  </defs>
+
+  <!-- Hexagonal Rounded Shield Base -->
+  <rect x="6" y="6" width="88" height="88" rx="24" fill="url(#shieldGrad)" stroke="#3b82f6" stroke-width="2" stroke-opacity="0.4" />
+  
+  <!-- Ambient Inner Blue Ring -->
+  <circle cx="50" cy="50" r="34" fill="none" stroke="url(#cyanGrad)" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.4" />
+
+  <!-- Stylized Compass / Pin Base (Nest) -->
+  <path d="M50 18 C35 18 24 29 24 43 C24 60 46 78 50 82 C54 78 76 60 76 43 C76 29 65 18 50 18 Z" 
+        fill="url(#blueGradPrimary)" 
+        opacity="0.18" />
+
+  <path d="M50 22 C37.5 22 28 32 28 43 C28 57 47 73 50 76 C53 73 72 57 72 43 C72 32 62.5 22 50 22 Z" 
+        fill="none" 
+        stroke="url(#blueGradPrimary)" 
+        stroke-width="2.5" 
+        stroke-linecap="round" />
+
+  <!-- Mountain Peak (Discovery) -->
+  <polygon points="50,30 33,56 67,56" fill="url(#blueGradPrimary)" opacity="0.3" />
+  <polyline points="33,56 50,30 67,56" fill="none" stroke="url(#cyanGrad)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" />
+
+  <!-- Snowcap Accent -->
+  <polygon points="50,30 43,40 50,38 57,40" fill="url(#flightGrad)" />
+
+  <!-- Modern Origami Swift / Airplane (Travel & Flight) -->
+  <g filter="url(#electricGlow)">
+    <path d="M50 28 L68 46 L54 44 L50 62 L46 44 L32 46 Z" fill="url(#flightGrad)" />
+  </g>
+
+  <!-- Glowing Center Beacon -->
+  <circle cx="50" cy="43" r="3.5" fill="#38bdf8" />
+  <circle cx="50" cy="43" r="1.5" fill="#ffffff" />
+</svg>
