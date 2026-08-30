@@ -104,25 +104,26 @@ export default function PostDetail() {
   return (
     <SocialLayout>
       <div className="row justify-content-center">
-        <div className="col-12" style={{ maxWidth: '680px' }}>
+        <div className="col-12 col-md-10 col-lg-8" style={{ maxWidth: '720px' }}>
           {/* Back Navigation Bar */}
           <div className="mb-4">
             <button
               onClick={() => navigate(-1)}
-              className="btn btn-outline-secondary btn-sm rounded-pill px-3 shadow-none"
+              className="btn btn-dark btn-sm rounded-pill px-3 border"
+              style={{ borderColor: 'var(--tn-border)' }}
             >
-              <i className="bi bi-arrow-left me-1"></i> Back
+              <i className="bi bi-arrow-left me-1"></i> Back to Feed
             </button>
           </div>
 
           {loading && <LoadingSpinner text="Loading travel post..." />}
 
           {!loading && error && (
-            <div className="card border-0 shadow-sm rounded-4 p-5 text-center bg-white my-4">
+            <div className="glass-card p-5 text-center my-4">
               <i className="bi bi-exclamation-triangle display-4 text-warning mb-3"></i>
-              <h5 className="fw-bold text-dark">{error}</h5>
-              <p className="text-secondary small mb-4">The post you are looking for may have been removed.</p>
-              <Link to="/home" className="btn btn-primary rounded-pill px-4">
+              <h5 className="fw-bold text-white font-heading">{error}</h5>
+              <p className="text-muted small mb-4">The post you are looking for may have been removed or is private.</p>
+              <Link to="/home" className="gradient-btn text-decoration-none">
                 Explore Feed
               </Link>
             </div>
