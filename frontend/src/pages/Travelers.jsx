@@ -10,7 +10,7 @@ import LoadingSpinner from '../components/social/LoadingSpinner';
 export default function Travelers() {
   const { token, user } = useAuth();
 
-  const [activeTab, setActiveTab] = useState('all'); // all, traveler, destination, post
+  const [activeTab, setActiveTab] = useState('all'); // all, travelers, destinations, trending
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
 
@@ -88,6 +88,7 @@ export default function Travelers() {
   }, [token, debouncedQuery, activeTab]);
 
   const handleFollowToggle = async (tId, isFollowing) => {
+    // Update local lists immediately
     const updater = (list) =>
       list.map((t) => (t.id === tId ? { ...t, is_following: !isFollowing } : t));
 
@@ -101,6 +102,7 @@ export default function Travelers() {
         await socialService.followUser(token, tId);
       }
     } catch {
+      // Revert if error
       if (debouncedQuery) {
         const res = await socialService.searchGlobal(token, debouncedQuery, activeTab);
         setTravelers(res.travelers || []);
@@ -113,22 +115,19 @@ export default function Travelers() {
   return (
     <SocialLayout>
       <div className="row justify-content-center">
-        <div className="col-12" style={{ maxWidth: '900px' }}>
-          
+        <div className="col-12" style={{ maxWidth: '840px' }}>
           {/* Header & Global Search Bar */}
           <div className="mb-4">
-            <h2 className="fw-bold text-white mb-1 font-heading">
-              Explore & <span className="gradient-text">Discover</span>
-            </h2>
-            <span className="text-muted small">Find global adventurers, stunning destinations, and trending moments</span>
+            <h2 className="fw-bold text-dark mb-1">Explore & Discover</h2>
+            <span className="text-secondary small">Find travelers, destinations, and trending moments worldwide</span>
           </div>
 
           <div className="mb-4 position-relative">
-            <i className="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-info"></i>
+            <i className="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-secondary"></i>
             <input
               type="text"
-              className="form-control rounded-pill py-3 ps-5 pe-5 shadow-sm"
-              placeholder="Search explorers, destinations, scenic spots, or tags..."
+              className="form-control rounded-4 py-3 ps-5 pe-5 bg-white shadow-sm border-0"
+              placeholder="Search travelers, destinations, or captions..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -138,14 +137,14 @@ export default function Travelers() {
                 onClick={() => setSearchTerm('')}
                 className="btn btn-sm btn-link position-absolute top-50 end-0 translate-middle-y me-2 text-muted shadow-none"
               >
-                <i className="bi bi-x-circle-fill text-muted"></i>
+                <i className="bi bi-x-circle-fill"></i>
               </button>
             )}
           </div>
 
           {/* Search Filters / Tabs */}
           {isSearching && (
-            <div className="d-flex gap-2 overflow-auto pb-3 mb-4" style={{ scrollbarWidth: 'none' }}>
+            <div className="d-flex gap-2 overflow-auto pb-3 mb-3">
               {[
                 { id: 'all', label: 'All Results', icon: 'bi-grid' },
                 { id: 'traveler', label: 'Travelers', icon: 'bi-people' },
@@ -155,12 +154,11 @@ export default function Travelers() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`btn btn-sm rounded-pill px-3 py-2 fw-semibold text-nowrap transition-all ${
+                  className={`btn btn-sm rounded-pill px-3 py-2 fw-semibold text-nowrap transition-all shadow-none ${
                     activeTab === tab.id
-                      ? 'gradient-btn'
-                      : 'btn-dark bg-dark text-muted border'
+                      ? 'btn-primary text-white'
+                      : 'btn-white bg-white text-secondary border-0 shadow-sm'
                   }`}
-                  style={{ borderColor: 'var(--tn-border)' }}
                 >
                   <i className={`bi ${tab.icon} me-1`}></i>
                   {tab.label}
@@ -170,7 +168,7 @@ export default function Travelers() {
           )}
 
           {/* Loading States */}
-          {loading && <LoadingSpinner text="Searching TripNest wanderlust index..." />}
+          {loading && <LoadingSpinner text="Searching TripNest..." />}
 
           {/* Error State */}
           {!loading && error && (
@@ -182,11 +180,12 @@ export default function Travelers() {
           {/* SEARCH RESULTS VIEW */}
           {isSearching && !loading && (
             <div>
+              {/* If no results in any category */}
               {travelers.length === 0 && posts.length === 0 && destinations.length === 0 && (
-                <div className="glass-card p-5 text-center my-3">
-                  <i className="bi bi-search display-4 text-info opacity-50 mb-3"></i>
-                  <h5 className="fw-bold text-white mb-1 font-heading">No matches found for "{debouncedQuery}"</h5>
-                  <p className="text-muted small mb-0">Try searching for a different explorer name, island, or country.</p>
+                <div className="card border-0 shadow-sm rounded-4 p-5 text-center bg-white my-3">
+                  <i className="bi bi-search display-4 text-secondary opacity-50 mb-3"></i>
+                  <h5 className="fw-bold text-dark mb-1">No matches found for "{debouncedQuery}"</h5>
+                  <p className="text-secondary small mb-0">Try searching for a different traveler name, city, or country.</p>
                 </div>
               )}
 
@@ -194,11 +193,11 @@ export default function Travelers() {
               {(activeTab === 'all' || activeTab === 'traveler') && travelers.length > 0 && (
                 <div className="mb-4">
                   <div className="d-flex align-items-center justify-content-between mb-3">
-                    <h5 className="fw-bold text-white mb-0 font-heading">
-                      <i className="bi bi-people-fill text-info me-2"></i>Travelers
+                    <h5 className="fw-bold text-dark mb-0">
+                      <i className="bi bi-people-fill text-primary me-2"></i>Travelers
                     </h5>
-                    <span className="badge bg-dark text-muted rounded-pill px-3 py-2 border" style={{ borderColor: 'var(--tn-border)' }}>
-                      {travelers.length} {travelers.length === 1 ? 'explorer' : 'explorers'}
+                    <span className="badge bg-light text-secondary rounded-pill px-3 py-2">
+                      {travelers.length} {travelers.length === 1 ? 'result' : 'results'}
                     </span>
                   </div>
                   {travelers.map((t) => (
@@ -216,10 +215,10 @@ export default function Travelers() {
               {(activeTab === 'all' || activeTab === 'destination') && destinations.length > 0 && (
                 <div className="mb-4">
                   <div className="d-flex align-items-center justify-content-between mb-3">
-                    <h5 className="fw-bold text-white mb-0 font-heading">
-                      <i className="bi bi-geo-alt-fill text-success me-2"></i>Destinations
+                    <h5 className="fw-bold text-dark mb-0">
+                      <i className="bi bi-geo-alt-fill text-teal me-2"></i>Destinations
                     </h5>
-                    <span className="badge bg-dark text-muted rounded-pill px-3 py-2 border" style={{ borderColor: 'var(--tn-border)' }}>
+                    <span className="badge bg-light text-secondary rounded-pill px-3 py-2">
                       {destinations.length} {destinations.length === 1 ? 'place' : 'places'}
                     </span>
                   </div>
@@ -228,9 +227,9 @@ export default function Travelers() {
                       <div key={dest.name} className="col-12 col-sm-6 col-md-4">
                         <Link
                           to={`/explore/destination/${encodeURIComponent(dest.name)}`}
-                          className="glass-card overflow-hidden text-decoration-none d-block h-100"
+                          className="card border-0 shadow-sm rounded-4 overflow-hidden text-decoration-none bg-white style-card h-100"
                         >
-                          <div style={{ height: '130px', backgroundColor: '#050811' }}>
+                          <div style={{ height: '120px', backgroundColor: '#0f172a' }}>
                             {dest.sampleImageUrl ? (
                               <img
                                 src={dest.sampleImageUrl}
@@ -239,13 +238,13 @@ export default function Travelers() {
                               />
                             ) : (
                               <div className="w-100 h-100 d-flex align-items-center justify-content-center text-white">
-                                <i className="bi bi-compass fs-1 text-info opacity-50"></i>
+                                <i className="bi bi-compass fs-1 opacity-50"></i>
                               </div>
                             )}
                           </div>
-                          <div className="p-3">
-                            <h6 className="fw-bold text-white mb-1 text-truncate font-heading">{dest.name}</h6>
-                            <span className="extra-small text-muted" style={{ fontSize: '0.75rem' }}>
+                          <div className="card-body p-3">
+                            <h6 className="fw-bold text-dark mb-1 text-truncate">{dest.name}</h6>
+                            <span className="extra-small text-muted">
                               {dest.postCount} {dest.postCount === 1 ? 'Moment' : 'Moments'} Shared
                             </span>
                           </div>
@@ -260,10 +259,10 @@ export default function Travelers() {
               {(activeTab === 'all' || activeTab === 'post') && posts.length > 0 && (
                 <div className="mb-4">
                   <div className="d-flex align-items-center justify-content-between mb-3">
-                    <h5 className="fw-bold text-white mb-0 font-heading">
-                      <i className="bi bi-camera-fill text-warning me-2"></i>Travel Moments
+                    <h5 className="fw-bold text-dark mb-0">
+                      <i className="bi bi-camera-fill text-primary me-2"></i>Travel Moments
                     </h5>
-                    <span className="badge bg-dark text-muted rounded-pill px-3 py-2 border" style={{ borderColor: 'var(--tn-border)' }}>
+                    <span className="badge bg-light text-secondary rounded-pill px-3 py-2">
                       {posts.length} {posts.length === 1 ? 'capture' : 'captures'}
                     </span>
                   </div>
@@ -273,15 +272,15 @@ export default function Travelers() {
             </div>
           )}
 
-          {/* DEFAULT DISCOVERY VIEW */}
+          {/* DEFAULT DISCOVERY VIEW (When Not Searching) */}
           {!isSearching && !initialLoading && (
             <div>
-              {/* Suggested Travelers */}
+              {/* Suggested Travelers Carousel / Grid */}
               {suggestedTravelers.length > 0 && (
                 <div className="mb-5">
                   <div className="d-flex align-items-center justify-content-between mb-3">
-                    <h5 className="fw-bold text-white mb-0 font-heading">
-                      <i className="bi bi-person-plus-fill text-info me-2"></i>Suggested Explorers
+                    <h5 className="fw-bold text-dark mb-0">
+                      <i className="bi bi-person-plus-fill text-primary me-2"></i>Suggested Travelers
                     </h5>
                   </div>
                   <div className="row g-3">
@@ -298,12 +297,12 @@ export default function Travelers() {
                 </div>
               )}
 
-              {/* Trending Destinations Grid */}
+              {/* Trending Destinations */}
               {trendingDestinations.length > 0 && (
                 <div className="mb-5">
                   <div className="d-flex align-items-center justify-content-between mb-3">
-                    <h5 className="fw-bold text-white mb-0 font-heading">
-                      <i className="bi bi-fire text-warning me-2"></i>Trending Destinations
+                    <h5 className="fw-bold text-dark mb-0">
+                      <i className="bi bi-fire text-danger me-2"></i>Trending Destinations
                     </h5>
                   </div>
                   <div className="row g-3">
@@ -311,24 +310,24 @@ export default function Travelers() {
                       <div key={dest.name} className="col-6 col-md-3">
                         <Link
                           to={`/explore/destination/${encodeURIComponent(dest.name)}`}
-                          className="glass-card overflow-hidden text-decoration-none d-block h-100"
+                          className="card border-0 shadow-sm rounded-4 overflow-hidden text-decoration-none bg-white style-card h-100"
                         >
-                          <div style={{ height: '120px', backgroundColor: '#050811' }}>
+                          <div style={{ height: '110px', backgroundColor: '#0f172a' }}>
                             {dest.sampleImageUrl ? (
                               <img
                                 src={dest.sampleImageUrl}
                                 alt={dest.name}
-                                className="w-100 h-100 object-fit-cover"
+                                className="w-100 h-100 object-fit-cover opacity-75"
                               />
                             ) : (
                               <div className="w-100 h-100 d-flex align-items-center justify-content-center text-white">
-                                <i className="bi bi-compass fs-2 text-info opacity-50"></i>
+                                <i className="bi bi-compass fs-2 opacity-50"></i>
                               </div>
                             )}
                           </div>
-                          <div className="p-2 text-center">
-                            <h6 className="fw-bold text-white mb-0 text-truncate small font-heading">{dest.name}</h6>
-                            <span className="extra-small text-muted" style={{ fontSize: '0.75rem' }}>{dest.postCount} Moments</span>
+                          <div className="card-body p-2 text-center">
+                            <h6 className="fw-bold text-dark mb-0 text-truncate small">{dest.name}</h6>
+                            <span className="extra-small text-muted">{dest.postCount} Moments</span>
                           </div>
                         </Link>
                       </div>
@@ -340,24 +339,19 @@ export default function Travelers() {
               {/* Trending Moments Grid */}
               <div className="mb-4">
                 <div className="d-flex align-items-center justify-content-between mb-3">
-                  <div>
-                    <h5 className="fw-bold text-white mb-0 font-heading">
-                      <i className="bi bi-compass-fill text-info me-2"></i>Explore Moments
-                    </h5>
-                    <span className="text-muted small">Real moments shared by the global community</span>
-                  </div>
-                  <Link to="/create" className="gradient-btn btn-sm text-decoration-none">
-                    <i className="bi bi-plus-lg me-1"></i> Share Moment
-                  </Link>
+                  <h5 className="fw-bold text-dark mb-0">
+                    <i className="bi bi-compass-fill text-teal me-2"></i>Explore Moments
+                  </h5>
+                  <span className="text-secondary small">Real moments shared by the community</span>
                 </div>
 
                 {trendingPosts.length === 0 ? (
-                  <div className="glass-card p-5 text-center my-3">
-                    <i className="bi bi-camera display-4 text-info opacity-50 mb-3"></i>
-                    <h5 className="fw-bold text-white mb-1 font-heading">No moments shared yet</h5>
-                    <p className="text-muted small mb-3">Be the first to share your journey on TripNest!</p>
-                    <Link to="/create" className="gradient-btn btn-sm text-decoration-none">
-                      Share Journey
+                  <div className="card border-0 shadow-sm rounded-4 p-5 text-center bg-white my-3">
+                    <i className="bi bi-camera display-4 text-secondary opacity-50 mb-3"></i>
+                    <h5 className="fw-bold text-dark mb-1">No moments shared yet</h5>
+                    <p className="text-secondary small mb-3">Be the first to share your journey on TripNest!</p>
+                    <Link to="/create" className="btn btn-primary btn-sm rounded-pill px-4 align-self-center">
+                      Create Post
                     </Link>
                   </div>
                 ) : (
@@ -366,7 +360,6 @@ export default function Travelers() {
               </div>
             </div>
           )}
-
         </div>
       </div>
     </SocialLayout>

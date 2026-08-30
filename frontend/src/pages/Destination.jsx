@@ -34,53 +34,44 @@ export default function Destination() {
   return (
     <SocialLayout>
       <div className="row justify-content-center">
-        <div className="col-12" style={{ maxWidth: '960px' }}>
-          
-          {/* Destination Hero Banner */}
-          <div className="glass-card p-4 p-md-5 mb-4 position-relative overflow-hidden">
+        <div className="col-12" style={{ maxWidth: '840px' }}>
+          {/* Destination Header Banner */}
+          <div className="card border-0 shadow-sm rounded-4 p-4 p-md-5 mb-4 bg-white">
             <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
               <div>
-                <div className="d-flex align-items-center gap-2 mb-2">
-                  <span className="badge rounded-pill bg-info bg-opacity-25 text-info px-3 py-1">
-                    <i className="bi bi-geo-alt-fill me-1"></i>Destination Guide
-                  </span>
-                  <span className="badge rounded-pill bg-success bg-opacity-25 text-success px-3 py-1">
-                    <i className="bi bi-brightness-high-fill me-1"></i>26°C Sunny
-                  </span>
+                <div className="d-flex align-items-center gap-2 mb-1">
+                  <i className="bi bi-geo-alt-fill text-teal fs-3"></i>
+                  <h2 className="fw-bold text-dark mb-0">{destination}</h2>
                 </div>
-                <h2 className="fw-bold text-white mb-2 font-heading">{destination}</h2>
-                <p className="text-muted small mb-0" style={{ maxWidth: '580px' }}>
-                  Explore authentic captures, hidden lookout points, and travel recommendations from the TripNest community in {destination}.
-                </p>
+                <span className="text-secondary small">
+                  Explore real moments, itineraries, and photo captures from travelers in {destination}.
+                </span>
               </div>
-              
-              <div className="d-flex gap-2">
-                <Link to="/create" className="gradient-btn btn-sm text-decoration-none">
-                  <i className="bi bi-plus-lg me-1"></i> Tag This Place
-                </Link>
-              </div>
+              <Link to="/travelers" className="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                <i className="bi bi-compass me-1"></i> Discover More
+              </Link>
             </div>
           </div>
 
-          {loading && <LoadingSpinner text={`Curating moments from ${destination}...`} />}
+          {loading && <LoadingSpinner text={`Loading moments from ${destination}...`} />}
 
           {!loading && error && (
-            <div className="glass-card p-5 text-center my-4">
-              <h5 className="fw-bold text-white mb-1 font-heading">Unable to load posts</h5>
-              <p className="text-muted small mb-3">{error}</p>
-              <button onClick={fetchDestinationPosts} className="gradient-btn btn-sm">
+            <div className="card border-0 shadow-sm rounded-4 p-5 text-center bg-white my-4">
+              <h5 className="fw-bold text-dark mb-1">Unable to load posts</h5>
+              <p className="text-secondary small mb-3">{error}</p>
+              <button onClick={fetchDestinationPosts} className="btn btn-primary btn-sm rounded-pill px-4">
                 Retry
               </button>
             </div>
           )}
 
           {!loading && !error && posts.length === 0 && (
-            <div className="glass-card p-5 text-center my-4">
-              <i className="bi bi-camera display-4 text-info opacity-50 mb-3"></i>
-              <h5 className="fw-bold text-white mb-1 font-heading">No moments shared from {destination} yet</h5>
-              <p className="text-muted small mb-4">Be the first explorer to share a photo and itinerary from {destination}!</p>
-              <Link to="/create" className="gradient-btn text-decoration-none">
-                <i className="bi bi-plus-lg me-1"></i> Share First Moment
+            <div className="card border-0 shadow-sm rounded-4 p-5 text-center bg-white my-4">
+              <i className="bi bi-camera display-4 text-secondary opacity-50 mb-3"></i>
+              <h5 className="fw-bold text-dark mb-1">No moments shared from {destination} yet</h5>
+              <p className="text-secondary small mb-4">Be the first traveler to share a photo and itinerary from {destination}!</p>
+              <Link to="/create" className="btn btn-primary rounded-pill px-4">
+                <i className="bi bi-plus-lg me-1"></i> Create First Post
               </Link>
             </div>
           )}
@@ -88,11 +79,11 @@ export default function Destination() {
           {!loading && !error && posts.length > 0 && (
             <div className="mb-4">
               <div className="d-flex align-items-center justify-content-between mb-3">
-                <h5 className="fw-bold text-white mb-0 font-heading">
-                  <i className="bi bi-grid-3x3 me-2 text-info"></i>Community Captures
+                <h5 className="fw-bold text-dark mb-0">
+                  <i className="bi bi-grid-3x3 me-2"></i>Traveler Moments
                 </h5>
-                <span className="badge bg-dark text-muted rounded-pill px-3 py-2 border" style={{ borderColor: 'var(--tn-border)' }}>
-                  {posts.length} {posts.length === 1 ? 'Moment' : 'Moments'}
+                <span className="badge bg-light text-secondary rounded-pill px-3 py-2">
+                  {posts.length} {posts.length === 1 ? 'Capture' : 'Captures'}
                 </span>
               </div>
 

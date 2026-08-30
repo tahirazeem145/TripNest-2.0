@@ -8,17 +8,6 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB per image
 const MAX_IMAGES = 10;
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
-const POPULAR_DESTINATIONS = [
-  'Santorini, Greece',
-  'Amalfi Coast, Italy',
-  'Kyoto, Japan',
-  'Swiss Alps, Switzerland',
-  'Bali, Indonesia',
-  'Reykjavik, Iceland',
-  'Paris, France',
-  'Maui, Hawaii'
-];
-
 export default function Create() {
   const { token, logout } = useAuth();
   const navigate = useNavigate();
@@ -53,6 +42,7 @@ export default function Create() {
       });
       if (urlPreview) URL.revokeObjectURL(urlPreview);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleFilesSelect = (e) => {
@@ -113,58 +103,87 @@ export default function Create() {
     setActivePreviewIndex(toIndex);
   };
 
+  const handleUrlChange = (e) => {
+    const url = e.target.value;
+    setImageUrlInput(url);
+    if (url.trim().startsWith('http://') || url.trim().startsWith('https://')) {
+      setUrlPreview(url.trim());
+      setError('');
+    } else {
+      setUrlPreview('');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!token) return;
 
     if (uploadMode === 'file' && selectedFiles.length === 0) {
-      setError('Please select at least one travel photo to publish.');
+      setError('Please select at least 1 image to upload.');
       return;
     }
 
     if (uploadMode === 'url' && !imageUrlInput.trim()) {
-      setError('Please provide an image URL.');
+      setError('Please enter a valid image URL.');
       return;
     }
 
-    setLoading(true);
+    if (!destination.trim()) {
+      setError('Destination or location is required.');
+      return;
+    }
+
+    if (!caption.trim()) {
+      setError('A caption or story is required.');
+      return;
+    }
+
     setError('');
-    setSuccess('');
+    setLoading(true);
 
     try {
-      let finalMediaUrls = [];
+      let mediaItems = [];
+      let primaryImageUrl = '';
 
       if (uploadMode === 'file') {
+        setUploadProgressText(`Uploading 1 of ${selectedFiles.length} images...`);
+        
         for (let i = 0; i < selectedFiles.length; i++) {
-          setUploadProgressText(`Uploading photo ${i + 1} of ${selectedFiles.length}...`);
-          const res = await socialService.uploadMedia(token, selectedFiles[i].file, 'post');
-          if (res && res.imageUrl) {
-            finalMediaUrls.push(res.imageUrl);
-          } else {
-            throw new Error(`Failed to upload photo ${i + 1}`);
-          }
+          setUploadProgressText(`Uploading ${i + 1} of ${selectedFiles.length} images to Supabase Storage...`);
+          const uploadRes = await socialService.uploadMedia(token, selectedFiles[i].file, 'post');
+          mediaItems.push({
+            media_url: uploadRes.imageUrl || uploadRes.url,
+            display_order: i,
+            media_type: 'image'
+          });
         }
+        primaryImageUrl = mediaItems[0].media_url;
       } else {
-        finalMediaUrls = [imageUrlInput.trim()];
+        primaryImageUrl = imageUrlInput.trim();
+        mediaItems.push({
+          media_url: primaryImageUrl,
+          display_order: 0,
+          media_type: 'image'
+        });
       }
 
-      setUploadProgressText('Publishing travel moment to the community...');
+      setUploadProgressText('Publishing travel moment to TripNest...');
       await socialService.createPost(token, {
-        caption: caption.trim(),
+        imageUrl: primaryImageUrl,
         destination: destination.trim(),
-        imageUrls: finalMediaUrls
+        caption: caption.trim(),
+        media: mediaItems
       });
 
-      setSuccess('Travel moment published successfully!');
+      setSuccess('Travel moment published successfully! Redirecting to feed...');
       setTimeout(() => {
         navigate('/home');
-      }, 1200);
+      }, 700);
     } catch (err) {
       if (err.message && err.message.includes('401')) {
         logout();
         navigate('/login');
       } else {
-        setError(err.message || 'Failed to publish post. Please try again.');
+        setError(err.message || 'Unable to publish post. Please check connection.');
       }
     } finally {
       setLoading(false);
@@ -172,54 +191,55 @@ export default function Create() {
     }
   };
 
+  const isFormValid =
+    (uploadMode === 'file' ? selectedFiles.length > 0 : !!imageUrlInput.trim()) &&
+    !!destination.trim() &&
+    !!caption.trim();
+
   return (
     <SocialLayout>
       <div className="row justify-content-center">
-        <div className="col-12 col-lg-10" style={{ maxWidth: '840px' }}>
-          <div className="glass-card p-4 p-sm-5 shadow-lg">
-            
-            {/* Header */}
-            <div className="mb-4 pb-3 d-flex align-items-center justify-content-between" style={{ borderBottom: '1px solid var(--tn-border)' }}>
+        <div className="col-12 col-md-10 col-lg-8" style={{ maxWidth: '680px' }}>
+          <div className="bg-white rounded-4 shadow-sm p-4 p-sm-5 border">
+            <div className="mb-4 pb-2 border-bottom d-flex align-items-center justify-content-between">
               <div>
-                <h3 className="fw-bold text-white mb-1 font-heading">
-                  Share Your <span className="gradient-text">Journey</span>
-                </h3>
-                <span className="text-muted small">Upload high-resolution multi-photo albums & tag destinations</span>
+                <h3 className="fw-bold text-dark mb-1">Create Travel Post</h3>
+                <span className="text-secondary small">Share your travel memories & multi-image captures</span>
               </div>
             </div>
 
             {error && (
-              <div className="alert alert-danger border-0 rounded-3 mb-4 bg-danger bg-opacity-10 text-danger" role="alert">
+              <div className="alert alert-danger border-0 rounded-3 mb-4 d-flex align-items-center" role="alert">
                 <i className="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
-                <span className="small">{error}</span>
+                <div className="small">{error}</div>
               </div>
             )}
 
             {success && (
-              <div className="alert alert-success border-0 rounded-3 mb-4 bg-success bg-opacity-10 text-success" role="alert">
+              <div className="alert alert-success border-0 rounded-3 mb-4 d-flex align-items-center" role="alert">
                 <i className="bi bi-check-circle-fill me-2 fs-5"></i>
-                <span className="small">{success}</span>
+                <div className="small">{success}</div>
               </div>
             )}
 
-            {/* Mode Switcher */}
-            <div className="d-flex rounded-3 p-1 mb-4" style={{ backgroundColor: 'rgba(15, 23, 42, 0.8)', border: '1px solid var(--tn-border)' }}>
+            {/* Upload Mode Selector */}
+            <div className="d-flex rounded-3 bg-light p-1 mb-4 border">
               <button
                 type="button"
                 className={`btn btn-sm flex-fill rounded-3 fw-semibold py-2 transition-all ${
-                  uploadMode === 'file' ? 'gradient-btn text-white' : 'text-muted border-0 bg-transparent'
+                  uploadMode === 'file' ? 'bg-white shadow-sm text-primary' : 'text-secondary'
                 }`}
                 onClick={() => {
                   setUploadMode('file');
                   setError('');
                 }}
               >
-                <i className="bi bi-images me-1"></i> Multi-Photo Album (Up to 10)
+                <i className="bi bi-images me-1"></i> Multi-Image Upload (Up to 10)
               </button>
               <button
                 type="button"
                 className={`btn btn-sm flex-fill rounded-3 fw-semibold py-2 transition-all ${
-                  uploadMode === 'url' ? 'gradient-btn text-white' : 'text-muted border-0 bg-transparent'
+                  uploadMode === 'url' ? 'bg-white shadow-sm text-primary' : 'text-secondary'
                 }`}
                 onClick={() => {
                   setUploadMode('url');
@@ -231,16 +251,15 @@ export default function Create() {
             </div>
 
             <form onSubmit={handleSubmit} noValidate>
-              
-              {/* Photo Upload Canvas */}
+              {/* Photo Input Area */}
               <div className="mb-4">
-                <div className="d-flex justify-content-between align-items-center mb-2">
-                  <label className="form-label small fw-semibold text-muted mb-0">
+                <div className="d-flex justify-content-between align-items-center mb-1">
+                  <label className="form-label small fw-semibold text-secondary mb-0">
                     Travel Photos <span className="text-danger">*</span>
                   </label>
                   {uploadMode === 'file' && (
-                    <span className="text-info extra-small">
-                      {selectedFiles.length}/{MAX_IMAGES} photos selected
+                    <span className="text-muted extra-small">
+                      {selectedFiles.length}/{MAX_IMAGES} images selected
                     </span>
                   )}
                 </div>
@@ -249,20 +268,20 @@ export default function Create() {
                   selectedFiles.length === 0 ? (
                     <div
                       onClick={() => fileInputRef.current?.click()}
-                      className="border border-2 border-dashed rounded-4 p-5 text-center cursor-pointer transition-all d-flex flex-column align-items-center justify-content-center"
-                      style={{ minHeight: '260px', borderColor: 'var(--tn-border)', backgroundColor: 'rgba(15, 23, 42, 0.4)', cursor: 'pointer' }}
+                      className="border border-2 border-dashed rounded-4 p-5 text-center cursor-pointer hover-bg-light transition-all d-flex flex-column align-items-center justify-content-center"
+                      style={{ minHeight: '240px', borderColor: '#cbd5e1', cursor: 'pointer' }}
                     >
                       <div
-                        className="rounded-circle d-flex align-items-center justify-content-center mb-3 shadow"
-                        style={{ width: '72px', height: '72px', background: 'linear-gradient(135deg, rgba(0, 166, 251, 0.2), rgba(6, 214, 160, 0.2))', border: '1px solid var(--tn-border)' }}
+                        className="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center mb-3"
+                        style={{ width: '64px', height: '64px' }}
                       >
-                        <i className="bi bi-cloud-arrow-up fs-2 text-info"></i>
+                        <i className="bi bi-images fs-2"></i>
                       </div>
-                      <h6 className="fw-bold text-white mb-1 font-heading">Click or drag photos to upload</h6>
-                      <p className="text-muted extra-small mb-3">Upload up to 10 JPG, PNG, or WEBP photos (max 10 MB each)</p>
+                      <h6 className="fw-bold text-dark mb-1">Click to select travel photos</h6>
+                      <p className="text-muted extra-small mb-3">Select up to 10 JPG, PNG, or WEBP photos (max 10 MB each)</p>
                       <button
                         type="button"
-                        className="gradient-btn btn-sm rounded-pill px-4 fw-semibold"
+                        className="btn btn-outline-primary btn-sm rounded-pill px-4 fw-semibold shadow-none"
                         onClick={(e) => {
                           e.stopPropagation();
                           fileInputRef.current?.click();
@@ -273,10 +292,10 @@ export default function Create() {
                     </div>
                   ) : (
                     <div>
-                      {/* Live Canvas Preview */}
+                      {/* Main Preview Container */}
                       <div
-                        className="position-relative rounded-4 overflow-hidden shadow-lg mb-3 d-flex align-items-center justify-content-center"
-                        style={{ minHeight: '300px', maxHeight: '600px', backgroundColor: '#050811', border: '1px solid var(--tn-border)' }}
+                        className="position-relative rounded-4 overflow-hidden shadow-sm mb-3 d-flex align-items-center justify-content-center"
+                        style={{ minHeight: '280px', maxHeight: '600px', backgroundColor: '#090d16' }}
                       >
                         {/* Ambient Backdrop */}
                         <div
@@ -285,7 +304,7 @@ export default function Create() {
                             backgroundImage: `url(${selectedFiles[activePreviewIndex]?.previewUrl})`,
                             backgroundSize: 'cover',
                             backgroundPosition: 'center',
-                            filter: 'blur(28px)',
+                            filter: 'blur(24px)',
                             transform: 'scale(1.15)'
                           }}
                         ></div>
@@ -302,11 +321,9 @@ export default function Create() {
                             zIndex: 1
                           }}
                         />
-
-                        <div className="position-absolute top-0 start-0 m-3 badge bg-dark bg-opacity-75 rounded-pill px-3 py-2 text-white" style={{ zIndex: 5 }}>
-                          Photo {activePreviewIndex + 1} of {selectedFiles.length}
+                        <div className="position-absolute top-0 start-0 m-3 badge bg-dark bg-opacity-75 rounded-pill px-3 py-2" style={{ zIndex: 5 }}>
+                          Image {activePreviewIndex + 1} of {selectedFiles.length}
                         </div>
-
                         <div className="position-absolute top-0 end-0 m-3" style={{ zIndex: 5 }}>
                           <button
                             type="button"
@@ -319,18 +336,23 @@ export default function Create() {
                         </div>
                       </div>
 
-                      {/* Thumbnail Strip */}
-                      <div className="d-flex align-items-center gap-2 overflow-auto pb-2 mb-2" style={{ scrollbarWidth: 'none' }}>
+                      {/* Thumbnail Strip with Reorder Controls */}
+                      <div className="d-flex align-items-center gap-2 overflow-auto pb-2 mb-2">
                         {selectedFiles.map((item, idx) => (
                           <div
                             key={item.id}
-                            className={`position-relative rounded-3 overflow-hidden flex-shrink-0 cursor-pointer ${
-                              activePreviewIndex === idx ? 'border border-2 border-info shadow' : 'border border-dark'
+                            className={`position-relative rounded-3 overflow-hidden flex-shrink-0 cursor-pointer border ${
+                              activePreviewIndex === idx ? 'border-primary border-3 shadow' : 'border-light'
                             }`}
-                            style={{ width: '68px', height: '68px', cursor: 'pointer' }}
+                            style={{ width: '64px', height: '64px', cursor: 'pointer' }}
                             onClick={() => setActivePreviewIndex(idx)}
                           >
                             <img src={item.previewUrl} alt={`Thumb ${idx}`} className="w-100 h-100 object-fit-cover" />
+                            {activePreviewIndex === idx && (
+                              <div className="position-absolute bottom-0 start-0 end-0 bg-primary text-white text-center extra-small py-0" style={{ fontSize: '0.6rem' }}>
+                                Active
+                              </div>
+                            )}
                           </div>
                         ))}
 
@@ -338,25 +360,24 @@ export default function Create() {
                           <button
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
-                            className="btn btn-dark rounded-3 d-flex flex-column align-items-center justify-content-center flex-shrink-0 border"
-                            style={{ width: '68px', height: '68px', borderColor: 'var(--tn-border)', borderStyle: 'dashed' }}
+                            className="btn btn-outline-secondary rounded-3 d-flex flex-column align-items-center justify-content-center flex-shrink-0"
+                            style={{ width: '64px', height: '64px', borderStyle: 'dashed' }}
                             title="Add more photos"
                           >
-                            <i className="bi bi-plus fs-4 text-info"></i>
-                            <span className="extra-small text-muted" style={{ fontSize: '0.65rem' }}>Add</span>
+                            <i className="bi bi-plus fs-4"></i>
+                            <span style={{ fontSize: '0.65rem' }}>Add</span>
                           </button>
                         )}
                       </div>
 
-                      {/* Reorder Buttons */}
+                      {/* Reorder Buttons for Active Photo */}
                       {selectedFiles.length > 1 && (
                         <div className="d-flex gap-2 justify-content-center mb-3">
                           <button
                             type="button"
                             onClick={() => handleMoveImage(activePreviewIndex, activePreviewIndex - 1)}
                             disabled={activePreviewIndex === 0}
-                            className="btn btn-dark btn-sm rounded-pill px-3 extra-small border"
-                            style={{ borderColor: 'var(--tn-border)' }}
+                            className="btn btn-light btn-sm rounded-pill px-3 extra-small shadow-none"
                           >
                             <i className="bi bi-arrow-left me-1"></i> Move Left
                           </button>
@@ -364,8 +385,7 @@ export default function Create() {
                             type="button"
                             onClick={() => handleMoveImage(activePreviewIndex, activePreviewIndex + 1)}
                             disabled={activePreviewIndex === selectedFiles.length - 1}
-                            className="btn btn-dark btn-sm rounded-pill px-3 extra-small border"
-                            style={{ borderColor: 'var(--tn-border)' }}
+                            className="btn btn-light btn-sm rounded-pill px-3 extra-small shadow-none"
                           >
                             Move Right <i className="bi bi-arrow-right ms-1"></i>
                           </button>
@@ -377,22 +397,42 @@ export default function Create() {
                   <div>
                     <input
                       type="url"
-                      className="form-control mb-2"
-                      placeholder="https://images.unsplash.com/..."
+                      className="form-control rounded-3 p-3 mb-2"
+                      placeholder="https://example.com/photo.jpg"
                       value={imageUrlInput}
-                      onChange={(e) => {
-                        setImageUrlInput(e.target.value);
-                        setUrlPreview(e.target.value);
-                      }}
+                      onChange={handleUrlChange}
+                      disabled={loading}
                     />
                     {urlPreview && (
-                      <div className="rounded-4 overflow-hidden mt-3 text-center" style={{ maxHeight: '400px', backgroundColor: '#090d16' }}>
+                      <div
+                        className="position-relative rounded-4 overflow-hidden shadow-sm mt-3 d-flex align-items-center justify-content-center"
+                        style={{ minHeight: '260px', maxHeight: '500px', backgroundColor: '#090d16' }}
+                      >
+                        <div
+                          className="position-absolute top-0 start-0 w-100 h-100 opacity-25"
+                          style={{
+                            backgroundImage: `url(${urlPreview})`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            filter: 'blur(24px)',
+                            transform: 'scale(1.15)'
+                          }}
+                        ></div>
                         <img
                           src={urlPreview}
-                          alt="URL preview"
-                          className="w-100 object-fit-contain"
-                          style={{ maxHeight: '400px' }}
-                          onError={() => setError('Invalid image URL or resource not accessible.')}
+                          alt="Preview"
+                          className="w-100 d-block position-relative"
+                          style={{
+                            maxHeight: '500px',
+                            objectFit: 'contain',
+                            width: '100%',
+                            height: 'auto',
+                            zIndex: 1
+                          }}
+                          onError={() => {
+                            setError('Unable to load image from URL. Please check link.');
+                            setUrlPreview('');
+                          }}
                         />
                       </div>
                     )}
@@ -403,76 +443,71 @@ export default function Create() {
                   type="file"
                   ref={fileInputRef}
                   onChange={handleFilesSelect}
-                  multiple
                   accept="image/jpeg,image/png,image/webp"
+                  multiple
                   className="d-none"
+                  disabled={loading}
                 />
               </div>
 
-              {/* Destination Tag */}
-              <div className="mb-4">
-                <label className="form-label small fw-semibold text-muted">Destination Location</label>
-                <div className="input-group mb-2">
-                  <span className="input-group-text bg-dark border-0 text-info">
-                    <i className="bi bi-geo-alt-fill"></i>
-                  </span>
+              {/* Destination Input */}
+              <div className="mb-3">
+                <label className="form-label small fw-semibold text-secondary">
+                  Destination / Location <span className="text-danger">*</span>
+                </label>
+                <div className="position-relative">
                   <input
                     type="text"
-                    className="form-control"
-                    placeholder="e.g. Positano, Amalfi Coast, Italy"
+                    className="form-control rounded-3 p-3 ps-5"
+                    placeholder="Where was this photo taken? (e.g. Kyoto, Japan)"
                     value={destination}
                     onChange={(e) => setDestination(e.target.value)}
+                    maxLength={150}
+                    disabled={loading}
+                    required
                   />
-                </div>
-
-                {/* Popular Destination Suggestions */}
-                <div className="d-flex flex-wrap gap-2 mt-2">
-                  {POPULAR_DESTINATIONS.map((dest, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => setDestination(dest)}
-                      className="destination-pill border-0 extra-small"
-                      style={{ fontSize: '0.75rem' }}
-                    >
-                      {dest}
-                    </button>
-                  ))}
+                  <i className="bi bi-geo-alt-fill position-absolute top-50 start-0 translate-middle-y ms-3 text-teal"></i>
                 </div>
               </div>
 
-              {/* Caption */}
+              {/* Caption Input */}
               <div className="mb-4">
-                <label className="form-label small fw-semibold text-muted">Journey Caption & Travel Story</label>
+                <div className="d-flex justify-content-between align-items-center mb-1">
+                  <label className="form-label small fw-semibold text-secondary mb-0">
+                    Caption / Story <span className="text-danger">*</span>
+                  </label>
+                  <span className="text-muted extra-small">{caption.length}/2000</span>
+                </div>
                 <textarea
-                  className="form-control"
-                  rows="3"
-                  placeholder="Tell fellow explorers about the hidden coves, local cafes, and stunning vistas..."
+                  className="form-control rounded-3 p-3"
+                  rows="4"
+                  placeholder="Share details about this place, travel advice, or highlights..."
                   value={caption}
                   onChange={(e) => setCaption(e.target.value)}
-                />
+                  maxLength={2000}
+                  disabled={loading}
+                  required
+                ></textarea>
               </div>
 
-              {/* Submit Action */}
+              {/* Submit Button */}
               <button
                 type="submit"
-                className="gradient-btn w-100 p-3 fw-bold d-flex align-items-center justify-content-center"
-                disabled={loading}
+                className="btn btn-primary w-100 rounded-3 p-3 fw-semibold d-flex align-items-center justify-content-center shadow-sm"
+                disabled={loading || !isFormValid}
               >
                 {loading ? (
                   <>
-                    <span className="spinner-border spinner-border-sm me-2"></span>
-                    <span>{uploadProgressText || 'Publishing Journey...'}</span>
+                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    {uploadProgressText || 'Publishing Moment...'}
                   </>
                 ) : (
                   <>
-                    <i className="bi bi-send-fill me-2"></i>
-                    <span>Publish Travel Moment</span>
+                    <i className="bi bi-send-fill me-2"></i> Publish Moment
                   </>
                 )}
               </button>
             </form>
-
           </div>
         </div>
       </div>

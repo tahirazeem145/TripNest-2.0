@@ -6,9 +6,10 @@ export default function Settings() {
   const { user, logout } = useAuth();
 
   // Theme & Appearance (Loaded from localStorage)
-  const [themeMode, setThemeMode] = useState(() => localStorage.getItem('tripnest_theme') || 'dark');
+  const [themeMode, setThemeMode] = useState(() => localStorage.getItem('tripnest_theme') || 'light');
   const [compactFeed, setCompactFeed] = useState(() => localStorage.getItem('tripnest_compact') === 'true');
 
+  // Real-time Theme Application Effect
   useEffect(() => {
     if (themeMode === 'dark') {
       document.documentElement.setAttribute('data-bs-theme', 'dark');
@@ -20,6 +21,7 @@ export default function Settings() {
     localStorage.setItem('tripnest_theme', themeMode);
   }, [themeMode]);
 
+  // Real-time Compact Feed Mode Effect
   useEffect(() => {
     if (compactFeed) {
       document.body.classList.add('compact-feed');
@@ -32,57 +34,57 @@ export default function Settings() {
   return (
     <SocialLayout>
       <div className="py-2 justify-content-center row">
-        <div className="col-12 col-md-10 col-lg-8" style={{ maxWidth: '720px' }}>
+        <div className="col-12 col-md-10 col-lg-8" style={{ maxWidth: '680px' }}>
           
           {/* Page Header */}
           <div className="d-flex align-items-center justify-content-between mb-4">
             <div>
-              <h2 className="fw-bold text-white mb-1 font-heading">
-                Settings & <span className="gradient-text">Preferences</span>
+              <h2 className="fw-bold text-dark mb-1">
+                <i className="bi bi-palette-fill text-primary me-2"></i>Appearance & Theme
               </h2>
-              <p className="text-muted small mb-0">Configure appearance, account controls, and feed layout.</p>
+              <p className="text-secondary mb-0">Customize how TripNest looks and displays on your device.</p>
             </div>
           </div>
 
-          <div className="glass-card p-4 p-sm-5 shadow-lg">
+          <div className="bg-white rounded-4 shadow-sm p-4 p-sm-5 border">
             
             {/* Theme Mode Selection */}
             <div className="mb-4">
-              <label className="form-label fw-bold text-white d-block mb-3 font-heading">Interface Color Theme</label>
+              <label className="form-label fw-bold text-dark d-block mb-3">Color Theme</label>
               <div className="row g-3">
                 <div className="col-6">
                   <div 
-                    className={`glass-card p-4 text-center cursor-pointer transition-all ${themeMode === 'dark' ? 'border-info shadow' : ''}`}
-                    onClick={() => setThemeMode('dark')}
+                    className={`card rounded-4 p-4 text-center cursor-pointer transition-all ${themeMode === 'light' ? 'border-primary bg-primary-subtle shadow-sm' : 'border-light-subtle'}`}
+                    onClick={() => setThemeMode('light')}
                     style={{ cursor: 'pointer' }}
                   >
-                    <i className="bi bi-moon-stars-fill display-5 text-info mb-2"></i>
-                    <div className="fw-bold text-white fs-6 font-heading">Midnight Horizon</div>
-                    <div className="extra-small text-muted mt-1" style={{ fontSize: '0.75rem' }}>Default dark travel theme</div>
+                    <i className="bi bi-sun-fill display-5 text-warning mb-2"></i>
+                    <div className="fw-bold text-dark fs-5">Light Theme</div>
+                    <div className="extra-small text-muted mt-1">Clean, bright interface</div>
                   </div>
                 </div>
 
                 <div className="col-6">
                   <div 
-                    className={`glass-card p-4 text-center cursor-pointer transition-all ${themeMode === 'light' ? 'border-info shadow' : ''}`}
-                    onClick={() => setThemeMode('light')}
+                    className={`card rounded-4 p-4 text-center cursor-pointer transition-all ${themeMode === 'dark' ? 'border-primary bg-dark text-white shadow-sm' : 'border-light-subtle'}`}
+                    onClick={() => setThemeMode('dark')}
                     style={{ cursor: 'pointer' }}
                   >
-                    <i className="bi bi-sun-fill display-5 text-warning mb-2"></i>
-                    <div className="fw-bold text-white fs-6 font-heading">Daylight Explorer</div>
-                    <div className="extra-small text-muted mt-1" style={{ fontSize: '0.75rem' }}>Bright sunshine theme</div>
+                    <i className="bi bi-moon-stars-fill display-5 text-info mb-2"></i>
+                    <div className="fw-bold text-white fs-5">Dark Mode</div>
+                    <div className="extra-small text-light opacity-75 mt-1">Sleek dark aesthetics</div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <hr className="my-4" style={{ borderColor: 'var(--tn-border)' }} />
+            <hr className="my-4 text-muted opacity-25" />
 
             {/* Compact Feed Mode Toggle */}
             <div className="d-flex align-items-center justify-content-between py-2">
               <div>
-                <div className="fw-bold text-white fs-6 font-heading">Compact Feed Mode</div>
-                <div className="text-muted small">Display higher density cards for rapid destination browsing.</div>
+                <div className="fw-bold text-dark fs-6">Compact Feed Mode</div>
+                <div className="text-muted small">Display more travel posts at once with reduced padding and compact cards.</div>
               </div>
               <div className="form-check form-switch fs-3 mb-0">
                 <input
@@ -94,18 +96,18 @@ export default function Settings() {
               </div>
             </div>
 
-            <hr className="my-4" style={{ borderColor: 'var(--tn-border)' }} />
+            <hr className="my-4 text-muted opacity-25" />
 
             {/* Signed In User Card & Sign Out */}
-            <div className="p-3 glass-card rounded-4 d-flex align-items-center justify-content-between">
+            <div className="p-3 bg-light rounded-4 d-flex align-items-center justify-content-between">
               <div>
-                <div className="extra-small text-uppercase text-info fw-bold" style={{ fontSize: '0.7rem' }}>Signed In Explorer</div>
-                <div className="fw-bold text-white">{user?.fullName || 'Traveler'}</div>
-                <div className="text-muted extra-small" style={{ fontSize: '0.75rem' }}>{user?.email}</div>
+                <div className="extra-small text-uppercase text-muted fw-bold">Signed In Account</div>
+                <div className="fw-bold text-dark">{user?.fullName || 'Traveler'}</div>
+                <div className="text-secondary extra-small">{user?.email}</div>
               </div>
               <button 
                 onClick={logout}
-                className="btn btn-outline-danger btn-sm rounded-pill px-3 fw-semibold"
+                className="btn btn-outline-danger btn-sm rounded-3 px-3 fw-semibold"
               >
                 <i className="bi bi-box-arrow-right me-1"></i>Sign Out
               </button>
@@ -118,3 +120,4 @@ export default function Settings() {
     </SocialLayout>
   );
 }
+

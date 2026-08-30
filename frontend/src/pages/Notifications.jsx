@@ -39,30 +39,28 @@ export default function Notifications() {
   return (
     <SocialLayout>
       <div className="row justify-content-center">
-        <div className="col-12 col-md-10 col-lg-8" style={{ maxWidth: '680px' }}>
+        <div className="col-12 col-md-10 col-lg-8" style={{ maxWidth: '640px' }}>
           <div className="d-flex align-items-center justify-content-between mb-4 pb-2">
             <div>
-              <h2 className="fw-bold text-white mb-1 font-heading">
-                Activity & <span className="gradient-text">Alerts</span>
-              </h2>
-              <span className="text-muted small">Interactions, likes, and comments from fellow explorers</span>
+              <h2 className="fw-bold text-dark mb-0">Notifications</h2>
+              <span className="text-secondary small">Activity alerts & interactions from other travelers</span>
             </div>
             {notifications.length > 0 && (
-              <button onClick={handleMarkAllRead} className="btn btn-dark btn-sm rounded-pill px-3 border" style={{ borderColor: 'var(--tn-border)' }}>
+              <button onClick={handleMarkAllRead} className="btn btn-outline-secondary btn-sm rounded-pill px-3">
                 Mark all as read
               </button>
             )}
           </div>
 
-          {loading && <LoadingSpinner text="Retrieving latest travel activity..." />}
+          {loading && <LoadingSpinner text="Retrieving latest activity..." />}
 
           {!loading && notifications.length === 0 && (
-            <div className="glass-card p-5 text-center my-4">
+            <div className="card border-0 shadow-sm rounded-4 p-5 text-center bg-white my-4">
               <div className="mb-3">
-                <i className="bi bi-bell display-3 text-info opacity-50"></i>
+                <i className="bi bi-bell display-3 text-secondary opacity-50"></i>
               </div>
-              <h4 className="fw-bold text-white mb-1 font-heading">You're all caught up!</h4>
-              <p className="text-muted small mb-0">When travelers like, comment or follow your moments, updates will appear here.</p>
+              <h4 className="fw-bold text-dark mb-1">You're all caught up!</h4>
+              <p className="text-secondary small mb-0">When travelers like, comment or follow you, updates will show here.</p>
             </div>
           )}
 

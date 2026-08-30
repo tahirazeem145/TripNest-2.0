@@ -9,25 +9,6 @@ import EmptyState from '../components/social/EmptyState';
 
 const PAGE_SIZE = 10;
 
-const FEATURED_STORIES = [
-  { name: 'Sofia Chen', location: 'Santorini, Greece', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80', active: true },
-  { name: 'Kenji Sato', location: 'Kyoto, Japan', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80', active: true },
-  { name: 'Elena Rossi', location: 'Amalfi, Italy', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80', active: true },
-  { name: 'Liam Walker', location: 'Swiss Alps', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80', active: true },
-  { name: 'Maya Patel', location: 'Bali, Indonesia', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80', active: true },
-  { name: 'Lucas Silva', location: 'Reykjavik, Iceland', avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150&auto=format&fit=crop&q=80', active: false }
-];
-
-const DESTINATION_PILLS = [
-  { name: 'All Destinations', filter: null },
-  { name: '🏝️ Santorini, Greece', filter: 'Santorini' },
-  { name: '🍋 Amalfi Coast, Italy', filter: 'Amalfi' },
-  { name: '🌸 Kyoto, Japan', filter: 'Kyoto' },
-  { name: '🏔️ Swiss Alps', filter: 'Swiss Alps' },
-  { name: '🌴 Bali, Indonesia', filter: 'Bali' },
-  { name: '🌋 Iceland', filter: 'Iceland' }
-];
-
 export default function Home() {
   const { token, user, logout } = useAuth();
   const navigate = useNavigate();
@@ -38,7 +19,6 @@ export default function Home() {
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState('');
   const [offset, setOffset] = useState(0);
-  const [selectedDestination, setSelectedDestination] = useState(null);
 
   // Real-time "New posts available" indicator
   const [hasNewPosts, setHasNewPosts] = useState(false);
@@ -232,72 +212,22 @@ export default function Home() {
     fetchInitialFeed();
   };
 
-  const filteredPosts = selectedDestination
-    ? posts.filter(p => p.destination && p.destination.toLowerCase().includes(selectedDestination.toLowerCase()))
-    : posts;
-
   return (
     <SocialLayout>
-      <div className="row g-4">
-        
-        {/* Main Feed Column */}
-        <div className="col-12 col-xl-8">
-          
-          {/* Header Banner */}
+      <div className="row justify-content-center">
+        <div className="col-12 col-md-10 col-lg-8" style={{ maxWidth: '640px' }}>
+          {/* Header */}
           <div className="d-flex align-items-center justify-content-between mb-4 pb-2">
             <div>
-              <h2 className="fw-bold text-white mb-1 font-heading">
-                Discover <span className="gradient-text">Moments</span>
-              </h2>
-              <span className="text-muted small">Live wanderlust stories & captures from global travelers</span>
+              <h2 className="fw-bold text-dark mb-0">Discover Moments</h2>
+              <span className="text-secondary small">Live stories & captures from global travelers</span>
             </div>
             <Link
               to="/create"
-              className="gradient-btn d-none d-sm-flex align-items-center gap-2 text-decoration-none shadow-sm"
+              className="btn btn-primary btn-sm rounded-pill px-3 py-2 fw-semibold d-none d-sm-flex align-items-center gap-1 shadow-sm"
             >
-              <i className="bi bi-plus-circle-fill fs-5"></i>
-              <span>Share Journey</span>
+              <i className="bi bi-plus-lg"></i> Share
             </Link>
-          </div>
-
-          {/* Active Traveler Stories Strip */}
-          <div className="glass-card p-3 mb-4 overflow-hidden">
-            <div className="d-flex align-items-center justify-content-between mb-2 px-1">
-              <span className="extra-small fw-bold text-uppercase tracking-wider" style={{ color: 'var(--tn-secondary)', fontSize: '0.75rem' }}>
-                <i className="bi bi-lightning-charge-fill me-1"></i>Active Traveler Stories
-              </span>
-              <span className="text-muted extra-small" style={{ fontSize: '0.75rem' }}>Updated live</span>
-            </div>
-            <div className="d-flex align-items-center gap-3 overflow-x-auto pb-2 pt-1 px-1" style={{ scrollbarWidth: 'none' }}>
-              {FEATURED_STORIES.map((story, idx) => (
-                <div key={idx} className="d-flex flex-column align-items-center flex-shrink-0 cursor-pointer" style={{ width: '72px' }}>
-                  <div className={story.active ? 'story-ring-wrapper' : 'p-1 rounded-circle bg-secondary bg-opacity-25'}>
-                    <img
-                      src={story.avatar}
-                      alt={story.name}
-                      className="rounded-circle object-fit-cover"
-                      style={{ width: '56px', height: '56px', border: '2px solid var(--tn-bg-deep)' }}
-                    />
-                  </div>
-                  <span className="text-white extra-small text-truncate mt-1 w-100 text-center" style={{ fontSize: '0.7rem' }}>
-                    {story.name.split(' ')[0]}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Trending Destination Filter Pills */}
-          <div className="d-flex align-items-center gap-2 overflow-x-auto pb-3 mb-3" style={{ scrollbarWidth: 'none' }}>
-            {DESTINATION_PILLS.map((pill, idx) => (
-              <button
-                key={idx}
-                onClick={() => setSelectedDestination(pill.filter)}
-                className={`destination-pill border-0 ${selectedDestination === pill.filter ? 'active' : ''}`}
-              >
-                {pill.name}
-              </button>
-            ))}
           </div>
 
           {/* Floating 'New Posts Available' Banner */}
@@ -305,14 +235,14 @@ export default function Home() {
             <div className="text-center mb-3 sticky-top" style={{ top: '80px', zIndex: 10 }}>
               <button
                 onClick={handleRefreshNewPosts}
-                className="gradient-btn btn-sm rounded-pill px-4 py-2 shadow-lg fw-semibold"
+                className="btn btn-primary btn-sm rounded-pill px-4 py-2 shadow-lg fw-semibold animate-bounce"
               >
-                <i className="bi bi-arrow-up-circle me-2"></i>New moments available • Refresh feed
+                <i className="bi bi-arrow-up-circle me-2"></i>New moments available • Click to refresh
               </button>
             </div>
           )}
 
-          {loading && <LoadingSpinner text="Curating immersive travel inspirations..." />}
+          {loading && <LoadingSpinner text="Curating travel inspirations for you..." />}
 
           {!loading && error && (
             <div className="alert alert-danger border-0 rounded-4 p-4 shadow-sm" role="alert">
@@ -320,19 +250,19 @@ export default function Home() {
             </div>
           )}
 
-          {!loading && !error && filteredPosts.length === 0 && (
+          {!loading && !error && posts.length === 0 && (
             <EmptyState
               icon="bi-compass"
-              title="No travel posts found"
-              message={selectedDestination ? `No moments shared for ${selectedDestination} yet. Be the first explorer to share!` : "Be the first traveler to post a moment, or follow others to build your discovery timeline."}
-              actionText="Share First Journey"
+              title="No travel posts yet"
+              message="Be the first traveler to post a moment, or follow others to build your discovery timeline."
+              actionText="Create First Post"
               actionLink="/create"
             />
           )}
 
           {!loading &&
             !error &&
-            filteredPosts.map((post) => (
+            posts.map((post) => (
               <PostCard
                 key={post.id}
                 post={post}
@@ -348,115 +278,21 @@ export default function Home() {
           {/* Infinite Scroll Indicator & Caught Up Message */}
           {loadingMore && (
             <div className="py-4 text-center">
-              <span className="spinner-border spinner-border-sm text-info me-2"></span>
-              <span className="text-muted small">Loading more travel moments...</span>
+              <span className="spinner-border spinner-border-sm text-primary me-2"></span>
+              <span className="text-secondary small">Loading more travel moments...</span>
             </div>
           )}
 
-          {!loading && !error && filteredPosts.length > 0 && !hasMore && (
-            <div className="py-4 text-center border-top my-3" style={{ borderColor: 'var(--tn-border)' }}>
+          {!loading && !error && posts.length > 0 && !hasMore && (
+            <div className="py-4 text-center border-top my-3">
               <div className="mb-2">
-                <i className="bi bi-check2-circle text-info fs-3"></i>
+                <i className="bi bi-check2-circle text-primary fs-3"></i>
               </div>
-              <h6 className="fw-bold text-white mb-1">You're all caught up</h6>
-              <p className="text-muted extra-small mb-0">You've explored all the latest wanderlust stories</p>
+              <h6 className="fw-bold text-dark mb-1">You're all caught up</h6>
+              <p className="text-muted extra-small mb-0">You've seen all latest posts from the community</p>
             </div>
           )}
         </div>
-
-        {/* Desktop Right Discovery Sidebar */}
-        <div className="d-none d-xl-block col-xl-4">
-          <div className="sticky-top" style={{ top: '24px' }}>
-            
-            {/* Trending Destinations Card */}
-            <div className="glass-card p-4 mb-4">
-              <div className="d-flex align-items-center justify-content-between mb-3">
-                <h6 className="fw-bold text-white mb-0 font-heading">
-                  <i className="bi bi-fire text-warning me-2"></i>Trending Destinations
-                </h6>
-                <Link to="/travelers" className="extra-small text-info text-decoration-none" style={{ fontSize: '0.75rem' }}>View Map</Link>
-              </div>
-
-              <div className="d-flex flex-column gap-3">
-                <div className="d-flex align-items-center gap-3 p-2 rounded-3 hover-bg" style={{ transition: 'background 0.2s ease' }}>
-                  <img
-                    src="https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=120&auto=format&fit=crop&q=80"
-                    alt="Santorini"
-                    className="rounded-3 object-fit-cover flex-shrink-0"
-                    style={{ width: '56px', height: '56px' }}
-                  />
-                  <div className="flex-grow-1 overflow-hidden">
-                    <div className="fw-bold small text-white text-truncate">Santorini, Greece</div>
-                    <div className="text-muted extra-small">1,420 travelers shared</div>
-                  </div>
-                  <span className="badge bg-primary bg-opacity-25 text-info rounded-pill px-2 py-1" style={{ fontSize: '0.7rem' }}>+28%</span>
-                </div>
-
-                <div className="d-flex align-items-center gap-3 p-2 rounded-3 hover-bg">
-                  <img
-                    src="https://images.unsplash.com/photo-1533105079780-92b9be482077?w=120&auto=format&fit=crop&q=80"
-                    alt="Amalfi Coast"
-                    className="rounded-3 object-fit-cover flex-shrink-0"
-                    style={{ width: '56px', height: '56px' }}
-                  />
-                  <div className="flex-grow-1 overflow-hidden">
-                    <div className="fw-bold small text-white text-truncate">Amalfi Coast, Italy</div>
-                    <div className="text-muted extra-small">980 travelers shared</div>
-                  </div>
-                  <span className="badge bg-primary bg-opacity-25 text-info rounded-pill px-2 py-1" style={{ fontSize: '0.7rem' }}>+19%</span>
-                </div>
-
-                <div className="d-flex align-items-center gap-3 p-2 rounded-3 hover-bg">
-                  <img
-                    src="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=120&auto=format&fit=crop&q=80"
-                    alt="Kyoto"
-                    className="rounded-3 object-fit-cover flex-shrink-0"
-                    style={{ width: '56px', height: '56px' }}
-                  />
-                  <div className="flex-grow-1 overflow-hidden">
-                    <div className="fw-bold small text-white text-truncate">Kyoto, Japan</div>
-                    <div className="text-muted extra-small">850 travelers shared</div>
-                  </div>
-                  <span className="badge bg-primary bg-opacity-25 text-info rounded-pill px-2 py-1" style={{ fontSize: '0.7rem' }}>+15%</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Top Explorers Widget */}
-            <div className="glass-card p-4">
-              <div className="d-flex align-items-center justify-content-between mb-3">
-                <h6 className="fw-bold text-white mb-0 font-heading">
-                  <i className="bi bi-compass text-info me-2"></i>Top Explorers
-                </h6>
-                <Link to="/travelers" className="extra-small text-info text-decoration-none" style={{ fontSize: '0.75rem' }}>See All</Link>
-              </div>
-
-              <div className="d-flex flex-column gap-3">
-                {FEATURED_STORIES.slice(0, 3).map((explorer, idx) => (
-                  <div key={idx} className="d-flex align-items-center justify-content-between">
-                    <div className="d-flex align-items-center gap-2 overflow-hidden">
-                      <img
-                        src={explorer.avatar}
-                        alt={explorer.name}
-                        className="rounded-circle object-fit-cover flex-shrink-0"
-                        style={{ width: '40px', height: '40px' }}
-                      />
-                      <div className="overflow-hidden">
-                        <div className="fw-bold small text-white text-truncate">{explorer.name}</div>
-                        <div className="text-muted extra-small text-truncate" style={{ fontSize: '0.7rem' }}>{explorer.location}</div>
-                      </div>
-                    </div>
-                    <button className="btn btn-sm btn-outline-info rounded-pill px-3 py-1 extra-small fw-semibold" style={{ fontSize: '0.75rem' }}>
-                      Follow
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-          </div>
-        </div>
-
       </div>
     </SocialLayout>
   );
