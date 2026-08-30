@@ -1,0 +1,39 @@
+{
+  "projectId": "1496387377024540458",
+  "title": "TripNest 2.0 — Social Travel & Discovery Platform",
+  "deviceType": "DESKTOP",
+  "designSystem": "Midnight Horizon",
+  "lastSyncTime": "2026-08-30T08:38:00Z",
+  "screens": [
+    {
+      "id": "8d4e57d730cc48d290d4e8e44fd27a5e",
+      "title": "Discovery Dashboard & Feed",
+      "route": "/dashboard",
+      "status": "GENERATED"
+    },
+    {
+      "id": "traveler-profile-screen",
+      "title": "Traveler Profile & Moments Gallery",
+      "route": "/profile/:id",
+      "status": "GENERATED"
+    },
+    {
+      "id": "create-studio-screen",
+      "title": "Create Post & Multi-Photo Studio",
+      "route": "/create",
+      "status": "GENERATED"
+    },
+    {
+      "id": "destination-explorer-screen",
+      "title": "Destination Explorer & Itinerary Hub",
+      "route": "/destination/:name",
+      "status": "GENERATED"
+    },
+    {
+      "id": "auth-onboarding-screen",
+      "title": "Modern Authentication & Onboarding",
+      "route": "/login",
+      "status": "GENERATED"
+    }
+  ]
+}
