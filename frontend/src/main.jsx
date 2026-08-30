@@ -9,11 +9,14 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 // Import custom styling
 import './index.css';
 
-// Apply saved theme & layout preferences on boot
-const savedTheme = localStorage.getItem('tripnest_theme');
+// Apply saved theme & layout preferences on boot (defaulting to Black & Blue theme)
+const savedTheme = localStorage.getItem('tripnest_theme') || 'dark';
 if (savedTheme === 'dark') {
   document.documentElement.setAttribute('data-bs-theme', 'dark');
   document.body.classList.add('dark-theme');
+} else {
+  document.documentElement.setAttribute('data-bs-theme', 'light');
+  document.body.classList.remove('dark-theme');
 }
 
 const savedCompact = localStorage.getItem('tripnest_compact');

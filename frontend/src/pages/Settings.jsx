@@ -54,25 +54,25 @@ export default function Settings() {
               <div className="row g-3">
                 <div className="col-6">
                   <div 
-                    className={`card rounded-4 p-4 text-center cursor-pointer transition-all ${themeMode === 'light' ? 'border-primary bg-primary-subtle shadow-sm' : 'border-light-subtle'}`}
-                    onClick={() => setThemeMode('light')}
+                    className={`card rounded-4 p-4 text-center cursor-pointer transition-all ${themeMode === 'dark' ? 'border-primary bg-dark text-white shadow-sm' : 'border-secondary'}`}
+                    onClick={() => setThemeMode('dark')}
                     style={{ cursor: 'pointer' }}
                   >
-                    <i className="bi bi-sun-fill display-5 text-warning mb-2"></i>
-                    <div className="fw-bold text-dark fs-5">Light Theme</div>
-                    <div className="extra-small text-muted mt-1">Clean, bright interface</div>
+                    <i className="bi bi-moon-stars-fill display-5 text-primary mb-2"></i>
+                    <div className="fw-bold text-white fs-5">Black & Blue</div>
+                    <div className="extra-small text-secondary mt-1">Obsidian & electric sapphire</div>
                   </div>
                 </div>
 
                 <div className="col-6">
                   <div 
-                    className={`card rounded-4 p-4 text-center cursor-pointer transition-all ${themeMode === 'dark' ? 'border-primary bg-dark text-white shadow-sm' : 'border-light-subtle'}`}
-                    onClick={() => setThemeMode('dark')}
+                    className={`card rounded-4 p-4 text-center cursor-pointer transition-all ${themeMode === 'light' ? 'border-primary bg-primary-subtle shadow-sm' : 'border-secondary'}`}
+                    onClick={() => setThemeMode('light')}
                     style={{ cursor: 'pointer' }}
                   >
-                    <i className="bi bi-moon-stars-fill display-5 text-info mb-2"></i>
-                    <div className="fw-bold text-white fs-5">Dark Mode</div>
-                    <div className="extra-small text-light opacity-75 mt-1">Sleek dark aesthetics</div>
+                    <i className="bi bi-sun-fill display-5 text-warning mb-2"></i>
+                    <div className="fw-bold text-dark fs-5">Light Minimal</div>
+                    <div className="extra-small text-muted mt-1">Clean, bright interface</div>
                   </div>
                 </div>
               </div>
