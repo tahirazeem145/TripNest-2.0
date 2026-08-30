@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { socialService } from '../services/socialService';
 import SocialLayout from '../layouts/SocialLayout';
@@ -72,7 +72,7 @@ export default function Following() {
     }
   }, [loadingMore, hasMore, token, offset]);
 
-  // Check for new followed-user posts periodically without disturbing scroll position (every 40s)
+  // Check for new followed-user posts periodically
   useEffect(() => {
     if (!token) return;
     const checkNewPosts = async () => {
@@ -109,6 +109,7 @@ export default function Following() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [handleScroll]);
 
+  // Optimistic Like
   const handleLike = async (postId, isLiked) => {
     setPosts((prev) =>
       prev.map((p) => {
@@ -145,6 +146,7 @@ export default function Following() {
     }
   };
 
+  // Optimistic Save
   const handleSave = async (postId, isSaved) => {
     setPosts((prev) =>
       prev.map((p) => {
@@ -174,7 +176,7 @@ export default function Following() {
   };
 
   const handleDeletePost = async (postId) => {
-    if (!window.confirm('Are you sure you want to delete this travel post? This action cannot be undone.')) return;
+    if (!window.confirm('Are you sure you want to delete this travel post?')) return;
     const previousPosts = [...posts];
     setPosts((prev) => prev.filter((p) => p.id !== postId));
     try {
@@ -210,20 +212,28 @@ export default function Following() {
   return (
     <SocialLayout>
       <div className="row justify-content-center">
-        <div className="col-12 col-md-10 col-lg-8" style={{ maxWidth: '640px' }}>
-          <div className="mb-4 pb-2">
-            <h2 className="fw-bold text-dark mb-0">Following Feed</h2>
-            <span className="text-secondary small">Latest stories from travelers you follow</span>
+        <div className="col-12 col-md-10 col-lg-8" style={{ maxWidth: '680px' }}>
+          
+          <div className="d-flex align-items-center justify-content-between mb-4 pb-2">
+            <div>
+              <h2 className="fw-bold text-white mb-1 font-heading">
+                Following <span className="gradient-text">Stream</span>
+              </h2>
+              <span className="text-muted small">Latest captures from the explorers in your circle</span>
+            </div>
+            <Link to="/travelers" className="btn btn-sm btn-outline-info rounded-pill px-3 py-1 fw-semibold">
+              <i className="bi bi-person-plus me-1"></i>Find Explorers
+            </Link>
           </div>
 
-          {/* Floating 'New Posts Available' Banner */}
+          {/* Floating New Posts Banner */}
           {hasNewPosts && (
             <div className="text-center mb-3 sticky-top" style={{ top: '80px', zIndex: 10 }}>
               <button
                 onClick={handleRefreshNewPosts}
-                className="btn btn-primary btn-sm rounded-pill px-4 py-2 shadow-lg fw-semibold animate-bounce"
+                className="gradient-btn btn-sm rounded-pill px-4 py-2 shadow-lg fw-semibold"
               >
-                <i className="bi bi-arrow-up-circle me-2"></i>New moments available • Click to refresh
+                <i className="bi bi-arrow-up-circle me-2"></i>New moments available • Refresh feed
               </button>
             </div>
           )}
@@ -239,9 +249,9 @@ export default function Following() {
           {!loading && !error && posts.length === 0 && (
             <EmptyState
               icon="bi-people"
-              title="Your following feed is empty"
-              message="Follow travelers to build your personal travel stream."
-              actionText="Discover Travelers"
+              title="Your following stream is waiting"
+              message="Follow fellow travelers, photographers, and wanderers to build your customized feed."
+              actionText="Discover Explorers"
               actionLink="/travelers"
             />
           )}
@@ -263,18 +273,18 @@ export default function Following() {
 
           {loadingMore && (
             <div className="py-4 text-center">
-              <span className="spinner-border spinner-border-sm text-primary me-2"></span>
-              <span className="text-secondary small">Loading more stories...</span>
+              <span className="spinner-border spinner-border-sm text-info me-2"></span>
+              <span className="text-muted small">Loading more stories...</span>
             </div>
           )}
 
           {!loading && !error && posts.length > 0 && !hasMore && (
-            <div className="py-4 text-center border-top my-3">
+            <div className="py-4 text-center border-top my-3" style={{ borderColor: 'var(--tn-border)' }}>
               <div className="mb-2">
-                <i className="bi bi-check2-circle text-primary fs-3"></i>
+                <i className="bi bi-check2-circle text-info fs-3"></i>
               </div>
-              <h6 className="fw-bold text-dark mb-1">You're all caught up</h6>
-              <p className="text-muted extra-small mb-0">You've seen all posts from travelers you follow</p>
+              <h6 className="fw-bold text-white mb-1">You're all caught up</h6>
+              <p className="text-muted extra-small mb-0">You've explored all posts from travelers you follow</p>
             </div>
           )}
         </div>
