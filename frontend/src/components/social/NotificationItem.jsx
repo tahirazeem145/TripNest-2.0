@@ -7,13 +7,13 @@ export default function NotificationItem({ notification }) {
       case 'like':
         return <i className="bi bi-heart-fill text-danger fs-5"></i>;
       case 'comment':
-        return <i className="bi bi-chat-fill text-primary fs-5"></i>;
+        return <i className="bi bi-chat-fill text-info fs-5"></i>;
       case 'follow':
-        return <i className="bi bi-person-plus-fill text-teal fs-5"></i>;
+        return <i className="bi bi-person-plus-fill text-success fs-5"></i>;
       case 'save':
         return <i className="bi bi-bookmark-fill text-warning fs-5"></i>;
       default:
-        return <i className="bi bi-bell-fill text-primary fs-5"></i>;
+        return <i className="bi bi-bell-fill text-info fs-5"></i>;
     }
   };
 
@@ -21,15 +21,15 @@ export default function NotificationItem({ notification }) {
     const name = n.actor?.fullName || 'A traveler';
     switch (n.type) {
       case 'like':
-        return <span><strong>{name}</strong> liked your travel post</span>;
+        return <span><strong className="text-white">{name}</strong> liked your travel post</span>;
       case 'comment':
-        return <span><strong>{name}</strong> commented on your post</span>;
+        return <span><strong className="text-white">{name}</strong> commented on your post</span>;
       case 'follow':
-        return <span><strong>{name}</strong> started following you</span>;
+        return <span><strong className="text-white">{name}</strong> started following your journeys</span>;
       case 'save':
-        return <span><strong>{name}</strong> bookmarked your moment</span>;
+        return <span><strong className="text-white">{name}</strong> bookmarked your moment</span>;
       default:
-        return <span><strong>{name}</strong> interacted with your profile</span>;
+        return <span><strong className="text-white">{name}</strong> interacted with your profile</span>;
     }
   };
 
@@ -43,7 +43,6 @@ export default function NotificationItem({ notification }) {
     }
   };
 
-  // Determine target link: if post_id exists -> /post/:id, otherwise /profile/:actor_id
   const targetLink = notification.post_id
     ? `/post/${notification.post_id}`
     : notification.actor_id
@@ -52,15 +51,15 @@ export default function NotificationItem({ notification }) {
 
   const content = (
     <div
-      className={`card border-0 shadow-sm rounded-4 p-3 mb-3 d-flex flex-row align-items-center justify-content-between transition-all style-card ${
-        notification.is_read ? 'bg-white' : 'bg-light border-start border-primary border-4'
+      className={`glass-card p-3 mb-3 d-flex flex-row align-items-center justify-content-between transition-all ${
+        notification.is_read ? '' : 'border-start border-info border-3'
       }`}
     >
       <div className="d-flex align-items-center me-3">
         <div className="me-3 flex-shrink-0">{getIcon(notification.type)}</div>
-        <div className="small text-dark">{getMessage(notification)}</div>
+        <div className="small text-light">{getMessage(notification)}</div>
       </div>
-      <div className="extra-small text-muted flex-shrink-0">{formatDate(notification.created_at)}</div>
+      <div className="extra-small text-muted flex-shrink-0" style={{ fontSize: '0.75rem' }}>{formatDate(notification.created_at)}</div>
     </div>
   );
 
