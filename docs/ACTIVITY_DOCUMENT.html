@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TripNest 2.0 — Capstone Project Activity Document</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-page: #f1f5f9;
+            --surface: #ffffff;
+            --text-primary: #000000;
+            --text-secondary: #333333;
+            --border-color: #000000;
+            --font-family: 'Inter', Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-page);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 820px;
+            margin: 0 auto;
+        }
+
+        /* Top Action Bar */
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .btn-print {
+            background: #0f172a;
+            color: #ffffff;
+            border: none;
+            padding: 0.6rem 1.4rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-print:hover {
+            background: #2563eb;
+        }
+
+        /* Academic Page Styling */
+        .doc-page {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            padding: 4rem 3.5rem;
+            margin-bottom: 2rem;
+            min-height: 1050px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .page-center {
+            text-align: center;
+        }
+
+        .title-main {
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 1.25rem;
+            line-height: 1.4;
+        }
+
+        .title-sub {
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 1.25rem;
+        }
+
+        .title-doc {
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+        }
+
+        .submitted-block {
+            margin-bottom: 2rem;
+            line-height: 1.8;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+
+        .index-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-top: 3rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        /* Index & Data Tables */
+        table.index-table, table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        table.index-table th, table.index-table td,
+        table.data-table th, table.data-table td {
+            border: 1px solid #000000;
+            padding: 0.6rem 0.8rem;
+            text-align: left;
+        }
+
+        table.index-table th, table.data-table th {
+            font-weight: 700;
+            text-transform: uppercase;
+            background-color: #ffffff;
+        }
+
+        table.data-table-heading {
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .section-header {
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            text-align: center;
+            margin-bottom: 1.75rem;
+        }
+
+        .rule-item {
+            margin-bottom: 1.2rem;
+        }
+
+        .rule-title {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        p.text-body {
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: #111111;
+            margin-bottom: 1.2rem;
+            text-align: justify;
+        }
+
+        /* Traditional ER Diagram Graphic Visualizer */
+        .er-canvas {
+            border: 1px solid #000000;
+            padding: 1rem;
+            background: #ffffff;
+            margin: 1rem 0;
+            overflow-x: auto;
+        }
+
+        .chen-diagram {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+        }
+
+        .chen-entity-card {
+            border: 2px solid #000000;
+            padding: 0.75rem;
+            background: #ffffff;
+        }
+
+        .chen-entity-name {
+            font-weight: 800;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            border-bottom: 1.5px solid #000000;
+            padding-bottom: 0.3rem;
+            margin-bottom: 0.4rem;
+            text-align: center;
+        }
+
+        .chen-attr-list {
+            font-size: 0.75rem;
+            font-family: 'Fira Code', monospace;
+            line-height: 1.4;
+        }
+
+        .chen-pk {
+            font-weight: 700;
+            text-decoration: underline;
+        }
+
+        .chen-rel-badge {
+            display: inline-block;
+            border: 1px solid #000;
+            padding: 0.1rem 0.4rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-top: 0.3rem;
+            text-transform: uppercase;
+            background: #f8fafc;
+        }
+
+        @media print {
+            body { background: #fff; padding: 0; }
+            .action-bar { display: none; }
+            .doc-page {
+                box-shadow: none;
+                border: none;
+                padding: 2.5rem 2rem;
+                margin-bottom: 0;
+                page-break-after: always;
+                min-height: 100vh;
+            }
+            .doc-page:last-child { page-break-after: auto; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Top Action Bar -->
+    <div class="action-bar">
+        <div>
+            <h3 style="font-size: 1rem; font-weight: 700;">TripNest 2.0 Activity Document</h3>
+            <p style="margin: 0; font-size: 0.82rem; color: #64748b;">Traditional ER Diagram, Explanation, Schema Mapping & Data Dictionary</p>
+        </div>
+        <button class="btn-print" onclick="window.print()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
+            Print / Save as PDF
+        </button>
+    </div>
+
+    <!-- PAGE 1: TITLE & INDEX PAGE -->
+    <div class="doc-page page-center">
+        <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+            <div class="title-main">TRIPNEST 2.0: TRAVEL PHOTO SHARING COMMUNITY PLATFORM</div>
+            <div class="title-sub">CAPSTONE PROJECT</div>
+            <div class="title-doc">ACTIVITY DOCUMENT</div>
+
+            <div class="submitted-block">
+                <div>SUBMITTED BY</div>
+                <div style="margin-top: 0.5rem; font-size: 1.1rem;">TAHIR AZEEM</div>
+                <div style="margin-top: 0.5rem;">YEAR: III</div>
+                <div style="margin-top: 0.5rem;">DEPARTMENT OF INFORMATION TECHNOLOGY</div>
+            </div>
+
+            <div class="index-title">INDEX PAGE</div>
+            <table class="index-table">
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">S.No</th>
+                        <th style="width: 65%;">CONTENTS</th>
+                        <th style="width: 20%;">PAGE NO.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>Traditional ER Diagram</td>
+                        <td>2</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>Traditional ER Diagram Explanation</td>
+                        <td>3</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>Schema Mapping Rules</td>
+                        <td>5</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>Data Dictionary</td>
+                        <td>6 onwards</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- PAGE 2: TRADITIONAL ER DIAGRAM -->
+    <div class="doc-page">
+        <div class="section-header">TRADITIONAL ER DIAGRAM</div>
+        
+        <div class="er-canvas">
+            <div class="chen-diagram">
+                <!-- User Entity -->
+                <div class="chen-entity-card">
+                    <div class="chen-entity-name">USERS</div>
+                    <div class="chen-attr-list">
+                        <div>• <span class="chen-pk">user_id</span></div>
+                        <div>• username</div>
+                        <div>• email</div>
+                        <div>• password</div>
+                        <div>• profile_picture</div>
+                        <div>• bio</div>
+                        <div>• location</div>
+                        <div>• created_at</div>
+                    </div>
+                    <div class="chen-rel-badge">1 : N (POSTS)</div>
+                </div>
+
+                <!-- Post Entity -->
+                <div class="chen-entity-card">
+                    <div class="chen-entity-name">POSTS</div>
+                    <div class="chen-attr-list">
+                        <div>• <span class="chen-pk">post_id</span></div>
+                        <div>• user_id (FK)</div>
+                        <div>• destination_id (FK)</div>
+                        <div>• title</div>
+                        <div>• captions</div>
+                        <div>• created_at</div>
+                    </div>
+                    <div class="chen-rel-badge">1 : N (PHOTOS)</div>
+                </div>
+
+                <!-- Photos Entity -->
+                <div class="chen-entity-card">
+                    <div class="chen-entity-name">PHOTOS</div>
+                    <div class="chen-attr-list">
+                        <div>• <span class="chen-pk">photo_id</span></div>
+                        <div>• post_id (FK)</div>
+                        <div>• image_url</div>
+                        <div>• caption</div>
+                        <div>• display_order</div>
+                    </div>
+                    <div class="chen-rel-badge">N : 1 (POSTS)</div>
+                </div>
+
+                <!-- Destination Entity -->
+                <div class="chen-entity-card">
+                    <div class="chen-entity-name">DESTINATIONS</div>
+                    <div class="chen-attr-list">
+                        <div>• <span class="chen-pk">destination_id</span></div>
+                        <div>• name</div>
+                        <div>• country</div>
+                        <div>• state / city</div>
+                        <div>• latitude / longitude</div>
+                        <div>• description</div>
+                    </div>
+                    <div class="chen-rel-badge">1 : N (POSTS)</div>
+                </div>
+
+                <!-- Likes Entity -->
+                <div class="chen-entity-card">
+                    <div class="chen-entity-name">LIKES</div>
+                    <div class="chen-attr-list">
+                        <div>• <span class="chen-pk">user_id</span> (FK)</div>
+                        <div>• <span class="chen-pk">post_id</span> (FK)</div>
+                        <div>• created_at</div>
+                    </div>
+                    <div class="chen-rel-badge">COMPOSITE PK</div>
+                </div>
+
+                <!-- Comments Entity -->
+                <div class="chen-entity-card">
+                    <div class="chen-entity-name">COMMENTS</div>
+                    <div class="chen-attr-list">
+                        <div>• <span class="chen-pk">comment_id</span></div>
+                        <div>• post_id (FK)</div>
+                        <div>• user_id (FK)</div>
+                        <div>• content</div>
+                        <div>• created_at</div>
+                    </div>
+                    <div class="chen-rel-badge">N : 1 (POSTS)</div>
+                </div>
+
+                <!-- Saved Posts Entity -->
+                <div class="chen-entity-card">
+                    <div class="chen-entity-name">SAVED_POSTS</div>
+                    <div class="chen-attr-list">
+                        <div>• <span class="chen-pk">user_id</span> (FK)</div>
+                        <div>• <span class="chen-pk">post_id</span> (FK)</div>
+                        <div>• created_at</div>
+                    </div>
+                    <div class="chen-rel-badge">COMPOSITE PK</div>
+                </div>
+
+                <!-- Follows Entity -->
+                <div class="chen-entity-card">
+                    <div class="chen-entity-name">FOLLOWS</div>
+                    <div class="chen-attr-list">
+                        <div>• <span class="chen-pk">follower_id</span> (FK)</div>
+                        <div>• <span class="chen-pk">following_id</span> (FK)</div>
+                        <div>• created_at</div>
+                    </div>
+                    <div class="chen-rel-badge">COMPOSITE PK</div>
+                </div>
+
+                <!-- Notifications Entity -->
+                <div class="chen-entity-card">
+                    <div class="chen-entity-name">NOTIFICATIONS</div>
+                    <div class="chen-attr-list">
+                        <div>• <span class="chen-pk">notification_id</span></div>
+                        <div>• user_id (FK)</div>
+                        <div>• type</div>
+                        <div>• message</div>
+                        <div>• is_read</div>
+                    </div>
+                    <div class="chen-rel-badge">N : 1 (USERS)</div>
+                </div>
+            </div>
+        </div>
+        <p class="text-body" style="text-align: center; font-size: 0.85rem; color: #555;">
+            *Conceptual Chen Entity-Relationship Diagram illustrating Entities, Attributes, Relationships, and Cardinalities.
+        </p>
+    </div>
+
+    <!-- PAGE 3: TRADITIONAL ER DIAGRAM EXPLANATION -->
+    <div class="doc-page">
+        <div class="section-header">TRADITIONAL ER DIAGRAM EXPLANATION</div>
+        
+        <p class="text-body">
+            The Traditional Entity Relationship (ER) Diagram represents the overall database structure of the <strong>Travel Photo Sharing Community Platform (TripNest 2.0 / TripTales AI)</strong>. It illustrates the major entities, their attributes, relationships, and cardinalities used in the system. The ER Diagram helps in understanding how different entities are connected before converting the design into relational database tables.
+        </p>
+
+        <p class="text-body">
+            The <strong>USERS</strong> entity is one of the main entities in the system. It stores information such as user ID, username, email, password, profile picture, bio, date of birth, gender, location, account status, and account creation details. Users can act as travelers, content creators, and community explorers. Users can create travel posts, add photos, write comments, like posts, save posts to collections, follow other travelers, and receive real-time notifications.
+        </p>
+
+        <p class="text-body">
+            The <strong>DESTINATIONS</strong> entity stores geographic information about travel spots. Each destination record contains destination ID, name, country, state, city, latitude, longitude, overview description, and image URL. Destinations form a central catalog that connects with travel posts, memories, itineraries, and recommendation systems.
+        </p>
+
+        <p class="text-body">
+            The <strong>POSTS</strong> entity stores travel stories and experiences published by users. Each post is associated with a specific author through the <code>user_id</code> and can be tagged with a destination through <code>destination_id</code>. Posts include details such as title, captions, and creation timestamp. Every post belongs to a user (1:N relationship from USERS to POSTS).
+        </p>
+
+        <p class="text-body">
+            The <strong>PHOTOS</strong> entity stores multi-image carousel attachments belonging to travel posts. Each photo contains photo ID, post ID, image URL, caption, and display order. This enables travelers to attach multiple high-resolution photos to a single travel post in sequential order.
+        </p>
+
+        <p class="text-body">
+            The <strong>LIKES</strong> entity manages post appreciations. It creates a connection between USERS and POSTS using a composite primary key <code>(user_id, post_id)</code>. This relationship ensures that a user can like a post at most once.
+        </p>
+
+        <p class="text-body">
+            The <strong>COMMENTS</strong> entity stores discussion feedback and remarks on posts. Attributes include comment ID, post ID, user ID, content, and creation timestamp. A post can receive multiple comments from various community members.
+        </p>
+    </div>
+
+    <!-- PAGE 4: TRADITIONAL ER DIAGRAM EXPLANATION (CONTINUED) -->
+    <div class="doc-page">
+        <p class="text-body">
+            The <strong>SAVED_POSTS</strong> entity allows users to bookmark travel posts that they are interested in. It connects USERS and POSTS using a composite primary key <code>(user_id, post_id)</code>, allowing a user to curate their personal travel bucket list.
+        </p>
+
+        <p class="text-body">
+            The <strong>FOLLOWS</strong> entity maintains the social network connections between users. It connects a follower with a following user through <code>(follower_id, following_id)</code>. A check constraint prevents users from self-following.
+        </p>
+
+        <p class="text-body">
+            The <strong>TRAVEL_MEMORIES</strong> entity stores personal trip journal logs and milestone moments. Each memory includes memory ID, user ID, destination ID, title, description, memory date, and cover photo.
+        </p>
+
+        <p class="text-body">
+            The <strong>TRIPS</strong> and <strong>TRIP_DESTINATIONS</strong> entities enable travelers to plan multi-day itineraries. TRIPS stores trip name, dates, and status, while TRIP_DESTINATIONS manages the ordered sequence of destination stops within each trip.
+        </p>
+
+        <p class="text-body">
+            The <strong>RECOMMENDATIONS</strong> entity stores algorithmic destination suggestions based on traveler preferences, including recommendation reason and relevance score.
+        </p>
+
+        <p class="text-body">
+            The <strong>BADGES</strong> and <strong>USER_BADGES</strong> entities represent gamification rewards (e.g., Trailblazer, Globetrotter). USER_BADGES tracks which achievements have been unlocked by each traveler.
+        </p>
+
+        <p class="text-body">
+            The <strong>NOTIFICATIONS</strong> entity manages real-time alerts sent to users for likes, comments, and new followers. It contains message text, notification type, read status, and creation date.
+        </p>
+
+        <p class="text-body">
+            Overall, the Traditional ER Diagram provides a clear representation of the entities and relationships used in the Travel Photo Sharing Community Platform. Primary Keys are used to uniquely identify records, while Foreign Keys establish relationships between related entities. The ER Diagram was later converted into relational tables using schema mapping rules, ensuring data integrity, consistency, and proper database organization.
+        </p>
+    </div>
+
+    <!-- PAGE 5: SCHEMA MAPPING RULES -->
+    <div class="doc-page">
+        <div class="section-header">SCHEMA MAPPING RULE</div>
+
+        <div class="rule-item">
+            <div class="rule-title">1. Entity to Table Mapping</div>
+            <p class="text-body" style="margin-bottom:0;">Each entity in the ER Diagram was converted into a separate relational table. For example, USERS, DESTINATIONS, POSTS, PHOTOS, COMMENTS, LIKES, and NOTIFICATIONS were converted into database tables.</p>
+        </div>
+
+        <div class="rule-item">
+            <div class="rule-title">2. Attribute to Column Mapping</div>
+            <p class="text-body" style="margin-bottom:0;">Each attribute of an entity was converted into a column in the corresponding table.</p>
+        </div>
+
+        <div class="rule-item">
+            <div class="rule-title">3. Primary Key Mapping</div>
+            <p class="text-body" style="margin-bottom:0;">Each table was assigned a Primary Key to uniquely identify every record.</p>
+        </div>
+
+        <div class="rule-item">
+            <div class="rule-title">4. Relationship Mapping</div>
+            <p class="text-body" style="margin-bottom:0;">Relationships between entities were implemented using Foreign Keys. For example, the <code>user_id</code> in the POSTS table references the USERS table.</p>
+        </div>
+
+        <div class="rule-item">
+            <div class="rule-title">5. One-to-Many Relationship Mapping</div>
+            <p class="text-body" style="margin-bottom:0;">For a one-to-many relationship, the Primary Key of the parent table was added as a Foreign Key in the child table.</p>
+        </div>
+
+        <div class="rule-item">
+            <div class="rule-title">6. One-to-One Relationship Mapping</div>
+            <p class="text-body" style="margin-bottom:0;">For a one-to-one relationship, a Foreign Key with a UNIQUE constraint was used. For example, USER_PRIVACY_SETTINGS is connected to USERS using <code>user_id</code>.</p>
+        </div>
+
+        <div class="rule-item">
+            <div class="rule-title">7. Many-to-Many Relationship Mapping</div>
+            <p class="text-body" style="margin-bottom:0;">Many-to-many relationships were represented using intermediate junction tables with composite primary keys (e.g., LIKES, SAVED_POSTS, FOLLOWS) to maintain relationships and avoid data redundancy.</p>
+        </div>
+
+        <div class="rule-item">
+            <div class="rule-title">8. Foreign Key Mapping</div>
+            <p class="text-body" style="margin-bottom:0;">Foreign Keys were used to establish relationships between related tables. For example, <code>user_id</code> connects USERS with POSTS, LIKES, COMMENTS, SAVED_POSTS, and NOTIFICATIONS.</p>
+        </div>
+
+        <div class="rule-item">
+            <div class="rule-title">9. Referential Integrity</div>
+            <p class="text-body" style="margin-bottom:0;">Referential integrity was maintained by using Foreign Key constraints with <code>ON DELETE CASCADE</code>. This ensures that deleting a user safely cleans up related child records.</p>
+        </div>
+
+        <div class="rule-item">
+            <div class="rule-title">10. Constraint Mapping</div>
+            <p class="text-body" style="margin-bottom:0;">Constraints such as NOT NULL, UNIQUE, PRIMARY KEY, FOREIGN KEY, and DEFAULT were applied to maintain data accuracy, consistency, and integrity.</p>
+        </div>
+
+        <div class="rule-item">
+            <div class="rule-title">11. Data Type Mapping</div>
+            <p class="text-body" style="margin-bottom:0;">Appropriate data types were selected based on the type of information stored. For example, VARCHAR and TEXT were used for text values, BIGINT/INT for numerical IDs, DATE and TIMESTAMP for date-related information, and DECIMAL for geographical coordinates.</p>
+        </div>
+    </div>
+
+    <!-- PAGE 6: DATA DICTIONARY -->
+    <div class="doc-page">
+        <div class="section-header">DATA DICTIONARY</div>
+        <p class="text-body">
+            The following data dictionary describes the tables, columns, data types, keys, and constraints used in the <strong>TripNest 2.0 (Travel Photo Sharing Community Platform)</strong> database.
+        </p>
+
+        <div class="data-table-heading">USERS Table</div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 35%;">Column Name</th>
+                    <th style="width: 30%;">Data Type</th>
+                    <th style="width: 35%;">Key / Constraint</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>user_id</td><td>SERIAL / BIGINT</td><td>PRIMARY KEY</td></tr>
+                <tr><td>username</td><td>VARCHAR(50)</td><td>UNIQUE, NOT NULL</td></tr>
+                <tr><td>email</td><td>VARCHAR(100)</td><td>UNIQUE, NOT NULL</td></tr>
+                <tr><td>password</td><td>VARCHAR(255)</td><td>NOT NULL</td></tr>
+                <tr><td>profile_picture</td><td>VARCHAR(255)</td><td>-</td></tr>
+                <tr><td>bio</td><td>TEXT</td><td>-</td></tr>
+                <tr><td>date_of_birth</td><td>DATE</td><td>-</td></tr>
+                <tr><td>gender</td><td>VARCHAR(20)</td><td>-</td></tr>
+                <tr><td>location</td><td>VARCHAR(100)</td><td>-</td></tr>
+                <tr><td>account_status</td><td>VARCHAR(20)</td><td>DEFAULT 'active'</td></tr>
+                <tr><td>created_at</td><td>TIMESTAMP</td><td>DEFAULT CURRENT_TIMESTAMP</td></tr>
+            </tbody>
+        </table>
+
+        <div class="data-table-heading">DESTINATIONS Table</div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 35%;">Column Name</th>
+                    <th style="width: 30%;">Data Type</th>
+                    <th style="width: 35%;">Key / Constraint</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>destination_id</td><td>SERIAL / BIGINT</td><td>PRIMARY KEY</td></tr>
+                <tr><td>name</td><td>VARCHAR(100)</td><td>NOT NULL</td></tr>
+                <tr><td>country</td><td>VARCHAR(100)</td><td>NOT NULL</td></tr>
+                <tr><td>state</td><td>VARCHAR(100)</td><td>-</td></tr>
+                <tr><td>city</td><td>VARCHAR(100)</td><td>-</td></tr>
+                <tr><td>latitude</td><td>DECIMAL(10,8)</td><td>-</td></tr>
+                <tr><td>longitude</td><td>DECIMAL(11,8)</td><td>-</td></tr>
+                <tr><td>description</td><td>TEXT</td><td>-</td></tr>
+                <tr><td>image_url</td><td>VARCHAR(255)</td><td>-</td></tr>
+                <tr><td>created_at</td><td>TIMESTAMP</td><td>DEFAULT CURRENT_TIMESTAMP</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- PAGE 7: DATA DICTIONARY (CONTINUED) -->
+    <div class="doc-page">
+        <div class="data-table-heading">POSTS Table</div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 35%;">Column Name</th>
+                    <th style="width: 30%;">Data Type</th>
+                    <th style="width: 35%;">Key / Constraint</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>post_id</td><td>SERIAL / BIGINT</td><td>PRIMARY KEY</td></tr>
+                <tr><td>user_id</td><td>INT / BIGINT</td><td>NOT NULL, FOREIGN KEY</td></tr>
+                <tr><td>destination_id</td><td>INT / BIGINT</td><td>FOREIGN KEY</td></tr>
+                <tr><td>title</td><td>VARCHAR(150)</td><td>NOT NULL</td></tr>
+                <tr><td>captions</td><td>TEXT</td><td>-</td></tr>
+                <tr><td>created_at</td><td>TIMESTAMP</td><td>DEFAULT CURRENT_TIMESTAMP</td></tr>
+                <tr><td>updated_at</td><td>TIMESTAMP</td><td>DEFAULT CURRENT_TIMESTAMP</td></tr>
+            </tbody>
+        </table>
+
+        <div class="data-table-heading">PHOTOS Table</div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 35%;">Column Name</th>
+                    <th style="width: 30%;">Data Type</th>
+                    <th style="width: 35%;">Key / Constraint</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>photo_id</td><td>SERIAL / BIGINT</td><td>PRIMARY KEY</td></tr>
+                <tr><td>post_id</td><td>INT / BIGINT</td><td>NOT NULL, FOREIGN KEY</td></tr>
+                <tr><td>image_url</td><td>VARCHAR(255)</td><td>NOT NULL</td></tr>
+                <tr><td>caption</td><td>VARCHAR(255)</td><td>-</td></tr>
+                <tr><td>display_order</td><td>INT</td><td>DEFAULT 0</td></tr>
+                <tr><td>created_at</td><td>TIMESTAMP</td><td>DEFAULT CURRENT_TIMESTAMP</td></tr>
+            </tbody>
+        </table>
+
+        <div class="data-table-heading">COMMENTS Table</div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 35%;">Column Name</th>
+                    <th style="width: 30%;">Data Type</th>
+                    <th style="width: 35%;">Key / Constraint</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>comment_id</td><td>SERIAL / BIGINT</td><td>PRIMARY KEY</td></tr>
+                <tr><td>post_id</td><td>INT / BIGINT</td><td>NOT NULL, FOREIGN KEY</td></tr>
+                <tr><td>user_id</td><td>INT / BIGINT</td><td>NOT NULL, FOREIGN KEY</td></tr>
+                <tr><td>content</td><td>TEXT</td><td>NOT NULL</td></tr>
+                <tr><td>created_at</td><td>TIMESTAMP</td><td>DEFAULT CURRENT_TIMESTAMP</td></tr>
+            </tbody>
+        </table>
+
+        <div class="data-table-heading">LIKES Table</div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 35%;">Column Name</th>
+                    <th style="width: 30%;">Data Type</th>
+                    <th style="width: 35%;">Key / Constraint</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>user_id</td><td>INT / BIGINT</td><td>NOT NULL, PRIMARY KEY, FOREIGN KEY</td></tr>
+                <tr><td>post_id</td><td>INT / BIGINT</td><td>NOT NULL, PRIMARY KEY, FOREIGN KEY</td></tr>
+                <tr><td>created_at</td><td>TIMESTAMP</td><td>DEFAULT CURRENT_TIMESTAMP</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- PAGE 8: DATA DICTIONARY (CONTINUED) -->
+    <div class="doc-page">
+        <div class="data-table-heading">SAVED_POSTS Table</div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 35%;">Column Name</th>
+                    <th style="width: 30%;">Data Type</th>
+                    <th style="width: 35%;">Key / Constraint</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>user_id</td><td>INT / BIGINT</td><td>NOT NULL, PRIMARY KEY, FOREIGN KEY</td></tr>
+                <tr><td>post_id</td><td>INT / BIGINT</td><td>NOT NULL, PRIMARY KEY, FOREIGN KEY</td></tr>
+                <tr><td>created_at</td><td>TIMESTAMP</td><td>DEFAULT CURRENT_TIMESTAMP</td></tr>
+            </tbody>
+        </table>
+
+        <div class="data-table-heading">FOLLOWS Table</div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 35%;">Column Name</th>
+                    <th style="width: 30%;">Data Type</th>
+                    <th style="width: 35%;">Key / Constraint</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>follower_id</td><td>INT / BIGINT</td><td>NOT NULL, PRIMARY KEY, FOREIGN KEY</td></tr>
+                <tr><td>following_id</td><td>INT / BIGINT</td><td>NOT NULL, PRIMARY KEY, FOREIGN KEY</td></tr>
+                <tr><td>created_at</td><td>TIMESTAMP</td><td>DEFAULT CURRENT_TIMESTAMP</td></tr>
+            </tbody>
+        </table>
+
+        <div class="data-table-heading">TRAVEL_MEMORIES Table</div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 35%;">Column Name</th>
+                    <th style="width: 30%;">Data Type</th>
+                    <th style="width: 35%;">Key / Constraint</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>memory_id</td><td>SERIAL / BIGINT</td><td>PRIMARY KEY</td></tr>
+                <tr><td>user_id</td><td>INT / BIGINT</td><td>NOT NULL, FOREIGN KEY</td></tr>
+                <tr><td>destination_id</td><td>INT / BIGINT</td><td>FOREIGN KEY</td></tr>
+                <tr><td>title</td><td>VARCHAR(150)</td><td>NOT NULL</td></tr>
+                <tr><td>description</td><td>TEXT</td><td>-</td></tr>
+                <tr><td>memory_date</td><td>DATE</td><td>NOT NULL</td></tr>
+                <tr><td>cover_image</td><td>VARCHAR(255)</td><td>-</td></tr>
+                <tr><td>created_at</td><td>TIMESTAMP</td><td>DEFAULT CURRENT_TIMESTAMP</td></tr>
+            </tbody>
+        </table>
+
+        <div class="data-table-heading">TRIPS Table</div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 35%;">Column Name</th>
+                    <th style="width: 30%;">Data Type</th>
+                    <th style="width: 35%;">Key / Constraint</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>trip_id</td><td>SERIAL / BIGINT</td><td>PRIMARY KEY</td></tr>
+                <tr><td>user_id</td><td>INT / BIGINT</td><td>NOT NULL, FOREIGN KEY</td></tr>
+                <tr><td>title</td><td>VARCHAR(150)</td><td>NOT NULL</td></tr>
+                <tr><td>description</td><td>TEXT</td><td>-</td></tr>
+                <tr><td>start_date</td><td>DATE</td><td>NOT NULL</td></tr>
+                <tr><td>end_date</td><td>DATE</td><td>NOT NULL</td></tr>
+                <tr><td>status</td><td>VARCHAR(30)</td><td>DEFAULT 'planned'</td></tr>
+                <tr><td>created_at</td><td>TIMESTAMP</td><td>DEFAULT CURRENT_TIMESTAMP</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- PAGE 9: DATA DICTIONARY (CONTINUED) -->
+    <div class="doc-page">
+        <div class="data-table-heading">TRIP_DESTINATIONS Table</div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 35%;">Column Name</th>
+                    <th style="width: 30%;">Data Type</th>
+                    <th style="width: 35%;">Key / Constraint</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>trip_id</td><td>INT / BIGINT</td><td>NOT NULL, PRIMARY KEY, FOREIGN KEY</td></tr>
+                <tr><td>destination_id</td><td>INT / BIGINT</td><td>NOT NULL, PRIMARY KEY, FOREIGN KEY</td></tr>
+                <tr><td>visit_order</td><td>INT</td><td>DEFAULT 1</td></tr>
+            </tbody>
+        </table>
+
+        <div class="data-table-heading">RECOMMENDATIONS Table</div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 35%;">Column Name</th>
+                    <th style="width: 30%;">Data Type</th>
+                    <th style="width: 35%;">Key / Constraint</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>recommendation_id</td><td>SERIAL / BIGINT</td><td>PRIMARY KEY</td></tr>
+                <tr><td>user_id</td><td>INT / BIGINT</td><td>NOT NULL, FOREIGN KEY</td></tr>
+                <tr><td>destination_id</td><td>INT / BIGINT</td><td>NOT NULL, FOREIGN KEY</td></tr>
+                <tr><td>reason</td><td>TEXT</td><td>-</td></tr>
+                <tr><td>score</td><td>DECIMAL(4,2)</td><td>DEFAULT 0.00</td></tr>
+                <tr><td>created_at</td><td>TIMESTAMP</td><td>DEFAULT CURRENT_TIMESTAMP</td></tr>
+            </tbody>
+        </table>
+
+        <div class="data-table-heading">BADGES Table</div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 35%;">Column Name</th>
+                    <th style="width: 30%;">Data Type</th>
+                    <th style="width: 35%;">Key / Constraint</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>badge_id</td><td>SERIAL / BIGINT</td><td>PRIMARY KEY</td></tr>
+                <tr><td>name</td><td>VARCHAR(100)</td><td>UNIQUE, NOT NULL</td></tr>
+                <tr><td>description</td><td>TEXT</td><td>-</td></tr>
+                <tr><td>icon</td><td>VARCHAR(255)</td><td>-</td></tr>
+                <tr><td>created_at</td><td>TIMESTAMP</td><td>DEFAULT CURRENT_TIMESTAMP</td></tr>
+            </tbody>
+        </table>
+
+        <div class="data-table-heading">USER_BADGES Table</div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 35%;">Column Name</th>
+                    <th style="width: 30%;">Data Type</th>
+                    <th style="width: 35%;">Key / Constraint</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>user_id</td><td>INT / BIGINT</td><td>NOT NULL, PRIMARY KEY, FOREIGN KEY</td></tr>
+                <tr><td>badge_id</td><td>INT / BIGINT</td><td>NOT NULL, PRIMARY KEY, FOREIGN KEY</td></tr>
+                <tr><td>earned_at</td><td>TIMESTAMP</td><td>DEFAULT CURRENT_TIMESTAMP</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- PAGE 10: DATA DICTIONARY (CONTINUED) -->
+    <div class="doc-page">
+        <div class="data-table-heading">USER_PRIVACY_SETTINGS Table</div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 35%;">Column Name</th>
+                    <th style="width: 30%;">Data Type</th>
+                    <th style="width: 35%;">Key / Constraint</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>privacy_id</td><td>SERIAL / BIGINT</td><td>PRIMARY KEY</td></tr>
+                <tr><td>user_id</td><td>INT / BIGINT</td><td>NOT NULL, UNIQUE, FOREIGN KEY</td></tr>
+                <tr><td>profile_visibility</td><td>VARCHAR(30)</td><td>DEFAULT 'public'</td></tr>
+                <tr><td>location_visibility</td><td>BOOLEAN</td><td>DEFAULT TRUE</td></tr>
+                <tr><td>show_travel_map</td><td>BOOLEAN</td><td>DEFAULT TRUE</td></tr>
+                <tr><td>allow_follow_requests</td><td>BOOLEAN</td><td>DEFAULT TRUE</td></tr>
+                <tr><td>updated_at</td><td>TIMESTAMP</td><td>DEFAULT CURRENT_TIMESTAMP</td></tr>
+            </tbody>
+        </table>
+
+        <div class="data-table-heading">USER_NOTIFICATION_SETTINGS Table</div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 35%;">Column Name</th>
+                    <th style="width: 30%;">Data Type</th>
+                    <th style="width: 35%;">Key / Constraint</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>notification_settings_id</td><td>SERIAL / BIGINT</td><td>PRIMARY KEY</td></tr>
+                <tr><td>user_id</td><td>INT / BIGINT</td><td>NOT NULL, UNIQUE, FOREIGN KEY</td></tr>
+                <tr><td>likes_enabled</td><td>BOOLEAN</td><td>DEFAULT TRUE</td></tr>
+                <tr><td>comments_enabled</td><td>BOOLEAN</td><td>DEFAULT TRUE</td></tr>
+                <tr><td>followers_enabled</td><td>BOOLEAN</td><td>DEFAULT TRUE</td></tr>
+                <tr><td>recommendations_enabled</td><td>BOOLEAN</td><td>DEFAULT TRUE</td></tr>
+                <tr><td>updated_at</td><td>TIMESTAMP</td><td>DEFAULT CURRENT_TIMESTAMP</td></tr>
+            </tbody>
+        </table>
+
+        <div class="data-table-heading">NOTIFICATIONS Table</div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 35%;">Column Name</th>
+                    <th style="width: 30%;">Data Type</th>
+                    <th style="width: 35%;">Key / Constraint</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>notification_id</td><td>SERIAL / BIGINT</td><td>PRIMARY KEY</td></tr>
+                <tr><td>user_id</td><td>INT / BIGINT</td><td>NOT NULL, FOREIGN KEY</td></tr>
+                <tr><td>message</td><td>TEXT</td><td>NOT NULL</td></tr>
+                <tr><td>type</td><td>VARCHAR(50)</td><td>-</td></tr>
+                <tr><td>reference_id</td><td>INT / BIGINT</td><td>-</td></tr>
+                <tr><td>is_read</td><td>BOOLEAN</td><td>DEFAULT FALSE</td></tr>
+                <tr><td>created_at</td><td>TIMESTAMP</td><td>DEFAULT CURRENT_TIMESTAMP</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>
