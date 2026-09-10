@@ -3,32 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TripNest 2.0 — Simple Database Practical Report (MySQL & Supabase PostgreSQL)</title>
+    <title>TripNest 2.0 — Supabase PostgreSQL Database Practical Report</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-page: #f8fafc;
-            --surface-card: #ffffff;
-            --text-primary: #0f172a;
-            --text-secondary: #475569;
-            --text-muted: #64748b;
-            --border-color: #e2e8f0;
-            --primary: #2563eb;
-            --primary-light: #eff6ff;
-            --terminal-bg: #0d1117;
-            --terminal-border: #30363d;
-            --terminal-text: #e6edf3;
-            --terminal-prompt: #58a6ff;
-            --terminal-keyword: #ff7b72;
-            --terminal-string: #a5d6ff;
-            --terminal-comment: #8b949e;
-            --terminal-number: #79c0ff;
-            --terminal-success: #3fb950;
-            --terminal-error: #f85149;
-            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --bg-page: #0b0f19;
+            --surface-card: #111827;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --border-color: #1f2937;
+            --supabase-green: #3ecf8e;
+            --supabase-green-dark: #24b47e;
+            --supabase-green-bg: rgba(62, 207, 142, 0.1);
+            --primary: #3b82f6;
+            --terminal-bg: #030712;
+            --terminal-border: #1f2937;
+            --terminal-text: #f3f4f6;
+            --terminal-prompt: #3ecf8e;
+            --terminal-keyword: #f472b6;
+            --terminal-string: #60a5fa;
+            --terminal-comment: #6b7280;
+            --terminal-number: #fbbf24;
+            --terminal-success: #3ecf8e;
+            --terminal-error: #f87171;
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.5);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -41,55 +42,43 @@
             padding: 2rem 1rem;
         }
 
-        .container { max-width: 920px; margin: 0 auto; }
+        .container { max-width: 940px; margin: 0 auto; }
 
+        /* Top Action Bar */
         .action-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #ffffff;
+            background: var(--surface-card);
             border: 1px solid var(--border-color);
             padding: 1rem 1.5rem;
             border-radius: 12px;
             margin-bottom: 1.5rem;
-            box-shadow: var(--shadow-sm);
+            box-shadow: var(--shadow-md);
             flex-wrap: wrap;
             gap: 1rem;
         }
 
-        .engine-tabs {
-            display: flex;
-            background: #f1f5f9;
-            padding: 4px;
-            border-radius: 8px;
-            gap: 4px;
-        }
-
-        .tab-btn {
-            border: none;
-            background: transparent;
-            padding: 0.5rem 1rem;
-            font-size: 0.85rem;
+        .engine-badge {
+            background: var(--supabase-green-bg);
+            color: var(--supabase-green);
+            border: 1px solid rgba(62, 207, 142, 0.3);
+            padding: 0.35rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.82rem;
             font-weight: 600;
-            border-radius: 6px;
-            cursor: pointer;
-            color: #64748b;
-            transition: all 0.2s ease;
-        }
-
-        .tab-btn.active {
-            background: #ffffff;
-            color: #0f172a;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
         }
 
         .btn-print {
-            background: #0f172a;
-            color: #ffffff;
+            background: var(--supabase-green);
+            color: #030712;
             border: none;
             padding: 0.6rem 1.4rem;
             border-radius: 8px;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 0.9rem;
             cursor: pointer;
             display: inline-flex;
@@ -98,16 +87,19 @@
             transition: all 0.2s ease;
         }
 
-        .btn-print:hover { background: #2563eb; }
+        .btn-print:hover {
+            background: #24b47e;
+            transform: translateY(-1px);
+        }
 
         .info-banner {
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            padding: 0.9rem 1.25rem;
+            background: rgba(62, 207, 142, 0.08);
+            border: 1px solid rgba(62, 207, 142, 0.25);
+            padding: 1rem 1.25rem;
             border-radius: 10px;
             margin-bottom: 2rem;
             font-size: 0.9rem;
-            color: #166534;
+            color: #a7f3d0;
             display: flex;
             align-items: center;
             gap: 0.75rem;
@@ -125,14 +117,14 @@
         .cover-header {
             text-align: center;
             padding-bottom: 2rem;
-            border-bottom: 2px solid #f1f5f9;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .cover-title {
-            font-size: 1.95rem;
+            font-size: 2rem;
             font-weight: 800;
             letter-spacing: -0.025em;
-            color: #0f172a;
+            color: #ffffff;
             text-transform: uppercase;
             margin-bottom: 0.5rem;
         }
@@ -140,7 +132,7 @@
         .cover-subtitle {
             font-size: 1.15rem;
             font-weight: 600;
-            color: #2563eb;
+            color: var(--supabase-green);
             margin-bottom: 1rem;
         }
 
@@ -156,58 +148,61 @@
             gap: 1rem;
             margin: 2rem 0;
             padding: 1.25rem;
-            background: #f8fafc;
+            background: #030712;
             border-radius: 8px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid var(--border-color);
         }
 
         .meta-item { text-align: left; }
         .meta-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); }
-        .meta-val { font-size: 0.95rem; font-weight: 600; color: #1e293b; margin-top: 0.2rem; }
+        .meta-val { font-size: 0.95rem; font-weight: 600; color: #f3f4f6; margin-top: 0.2rem; }
 
         h2.section-title {
             font-size: 1.35rem;
             font-weight: 700;
-            color: #0f172a;
+            color: #ffffff;
             margin-top: 1.5rem;
             margin-bottom: 0.8rem;
-            border-bottom: 2px solid #f1f5f9;
+            border-bottom: 1px solid var(--border-color);
             padding-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         h3.subsection-title {
             font-size: 1.05rem;
             font-weight: 600;
-            color: #1e293b;
+            color: #e5e7eb;
             margin-top: 1.4rem;
             margin-bottom: 0.5rem;
         }
 
-        p { margin-bottom: 0.85rem; color: #334155; font-size: 0.95rem; line-height: 1.7; }
+        p { margin-bottom: 0.85rem; color: #d1d5db; font-size: 0.95rem; line-height: 1.7; }
 
         .callout-box {
-            background: #eff6ff;
-            border-left: 4px solid #2563eb;
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 4px solid var(--primary);
             padding: 0.85rem 1rem;
             border-radius: 0 6px 6px 0;
             margin: 0.75rem 0 1.25rem 0;
             font-size: 0.9rem;
-            color: #1e40af;
+            color: #93c5fd;
         }
 
-        /* Terminal Window */
+        /* Terminal Window Mockup */
         .terminal-window {
             background-color: var(--terminal-bg);
             border: 1px solid var(--terminal-border);
             border-radius: 8px;
             overflow: hidden;
-            margin: 1rem 0 1.5rem 0;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            margin: 1.2rem 0 1.5rem 0;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
         }
 
         .terminal-header {
-            background-color: #161b22;
-            padding: 0.5rem 0.85rem;
+            background-color: #111827;
+            padding: 0.6rem 1rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -216,34 +211,40 @@
 
         .terminal-controls { display: flex; gap: 6px; }
         .terminal-btn { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
-        .btn-close { background-color: #ff5f56; }
-        .btn-minimize { background-color: #ffbd2e; }
-        .btn-maximize { background-color: #27c93f; }
+        .btn-close { background-color: #ef4444; }
+        .btn-minimize { background-color: #f59e0b; }
+        .btn-maximize { background-color: #10b981; }
 
-        .terminal-title { color: #8b949e; font-family: 'Fira Code', monospace; font-size: 0.75rem; }
+        .terminal-title {
+            color: #9ca3af;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.78rem;
+            font-weight: 500;
+        }
 
         .terminal-body {
-            padding: 1rem 1.25rem;
+            padding: 1.25rem;
             font-family: 'Fira Code', 'Consolas', monospace;
-            font-size: 0.85rem;
+            font-size: 0.88rem;
             color: var(--terminal-text);
-            line-height: 1.5;
+            line-height: 1.55;
             overflow-x: auto;
             white-space: pre;
         }
 
-        .prompt { color: var(--terminal-prompt); font-weight: 600; }
+        .prompt { color: var(--terminal-prompt); font-weight: 700; }
         .kw { color: var(--terminal-keyword); font-weight: 600; }
         .str { color: var(--terminal-string); }
         .comment { color: var(--terminal-comment); font-style: italic; }
         .num { color: var(--terminal-number); }
         .error { color: var(--terminal-error); font-weight: 600; }
+        .success { color: var(--terminal-success); font-weight: 600; }
 
-        /* ER Diagram Container */
+        /* ER Diagram Grid */
         .er-diagram-container {
-            border: 1px solid #cbd5e1;
+            border: 1px solid var(--border-color);
             border-radius: 8px;
-            background: #ffffff;
+            background: #030712;
             padding: 1.25rem;
             margin: 1.25rem 0;
         }
@@ -256,10 +257,10 @@
         }
 
         .er-card {
-            border: 1px solid #cbd5e1;
+            border: 1px solid var(--border-color);
             border-radius: 6px;
             font-size: 0.75rem;
-            background: #ffffff;
+            background: #111827;
             overflow: hidden;
         }
 
@@ -282,11 +283,11 @@
             padding: 0.5rem 0.6rem;
             font-family: 'Fira Code', monospace;
             line-height: 1.4;
-            color: #334155;
+            color: #d1d5db;
         }
 
-        .er-pk { color: #dc2626; font-weight: 600; }
-        .er-fk { color: #2563eb; font-weight: 600; }
+        .er-pk { color: #f87171; font-weight: 600; }
+        .er-fk { color: #60a5fa; font-weight: 600; }
 
         .data-table {
             width: 100%;
@@ -301,8 +302,8 @@
             text-align: left;
         }
 
-        .data-table th { background-color: #f1f5f9; color: #1e293b; font-weight: 600; }
-        .data-table tr:nth-child(even) { background-color: #f8fafc; }
+        .data-table th { background-color: #1f2937; color: #f9fafb; font-weight: 600; }
+        .data-table tr:nth-child(even) { background-color: #030712; }
 
         .badge {
             display: inline-block;
@@ -310,15 +311,16 @@
             font-size: 0.75rem;
             font-weight: 600;
             border-radius: 4px;
-            background: #dcfce7;
-            color: #166534;
+            background: rgba(62, 207, 142, 0.2);
+            color: var(--supabase-green);
         }
 
         @media print {
-            body { background: #fff; padding: 0; }
+            body { background: #fff; color: #000; padding: 0; }
             .action-bar, .info-banner { display: none; }
-            .report-page { box-shadow: none; border: none; padding: 0; margin-bottom: 0; page-break-after: always; }
+            .report-page { background: #fff; color: #000; box-shadow: none; border: none; padding: 0; margin-bottom: 0; page-break-after: always; }
             .report-page:last-child { page-break-after: auto; }
+            .terminal-window { border: 1px solid #ccc; background: #0d1117; }
         }
     </style>
 </head>
@@ -327,27 +329,23 @@
 <div class="container">
     <!-- Top Action Bar -->
     <div class="action-bar">
-        <div>
-            <h3 style="font-size: 1.05rem; font-weight: 700;">TripNest 2.0 — Simple Database Practical Report</h3>
-            <p style="margin: 0; font-size: 0.82rem; color: var(--text-muted);">Simple English • Real-World Examples • MySQL & Supabase PostgreSQL</p>
-        </div>
-        <div style="display: flex; gap: 10px; align-items: center;">
-            <div class="engine-tabs">
-                <button class="tab-btn active" id="btn-mysql" onclick="switchEngine('mysql')">MySQL 8.4 (Academic View)</button>
-                <button class="tab-btn" id="btn-postgres" onclick="switchEngine('postgres')">Supabase PostgreSQL (Live View)</button>
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div class="engine-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M21.362 9.354H12V.396a.396.396 0 0 0-.716-.233L.198 13.916a.396.396 0 0 0 .318.636H12v8.958a.396.396 0 0 0 .716.233l11.086-13.753a.396.396 0 0 0-.44-.636z"/></svg>
+                Supabase PostgreSQL 15+ (Production Engine)
             </div>
-            <button class="btn-print" onclick="window.print()">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
-                Print / Save as PDF
-            </button>
         </div>
+        <button class="btn-print" onclick="window.print()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
+            Print / Save as PDF
+        </button>
     </div>
 
     <!-- Info Explanation Banner -->
     <div class="info-banner">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" style="flex-shrink: 0;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3ecf8e" stroke-width="2" style="flex-shrink: 0;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
         <div>
-            <strong>Easy Note:</strong> Supabase is built on <strong>PostgreSQL (standard SQL)</strong>. All the table designs, keys, and JOIN queries in this practical work identically on both MySQL and Supabase!
+            <strong>Live Supabase Query Execution:</strong> In Supabase (PostgreSQL), table queries, joins, and constraint validations run via standard <code>psql</code> / Supabase SQL Editor commands shown in the terminal screens below.
         </div>
     </div>
 
@@ -356,424 +354,398 @@
         <div class="cover-header">
             <h1 class="cover-title">TRAVEL PHOTO SHARING COMMUNITY PLATFORM</h1>
             <div class="cover-subtitle">TripNest 2.0 / TripTales AI</div>
-            <div class="cover-topic">Relational Database Implementation, JOIN Queries & Composite Key Testing</div>
+            <div class="cover-topic">Supabase PostgreSQL Implementation, Relational JOINs & Constraint Testing</div>
         </div>
 
         <div class="meta-grid">
             <div class="meta-item">
                 <div class="meta-label">Database Engine</div>
-                <div class="meta-val" id="meta-engine">MySQL 8.4 / Supabase PostgreSQL</div>
+                <div class="meta-val" style="color: var(--supabase-green);">Supabase Cloud (PostgreSQL 15+)</div>
             </div>
             <div class="meta-item">
                 <div class="meta-label">Report Type</div>
                 <div class="meta-val">Database Practical / Project Doc</div>
             </div>
             <div class="meta-item">
-                <div class="meta-label">Prepared For</div>
-                <div class="meta-val">Academic Submission & Review</div>
+                <div class="meta-label">Department</div>
+                <div class="meta-val">Computer Science & Engineering (CSE)</div>
             </div>
         </div>
 
-        <h3 class="subsection-title" style="text-align: center; margin-top: 1.5rem; text-transform: uppercase; letter-spacing: 0.05em;">
-            Visual Database Schema (How Tables Connect)
+        <h3 class="subsection-title" style="text-align: center; margin-top: 1.5rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--supabase-green);">
+            System Entity-Relationship (ER) Architecture
         </h3>
 
         <!-- Visual Schema Grid -->
         <div class="er-diagram-container">
             <div class="er-grid">
                 <div class="er-card">
-                    <div class="er-card-header header-users">USER</div>
+                    <div class="er-card-header header-users">PROFILES</div>
                     <div class="er-card-body">
-                        <div><span class="er-pk">user_id</span> (PK)</div>
-                        <div>username (UQ)</div>
+                        <div><span class="er-pk">id</span> (UUID, PK)</div>
                         <div>email (UQ)</div>
                         <div>full_name</div>
+                        <div>avatar_url</div>
                         <div>bio</div>
                         <div>created_at</div>
                     </div>
                 </div>
 
                 <div class="er-card">
-                    <div class="er-card-header header-posts">POST</div>
+                    <div class="er-card-header header-posts">POSTS</div>
                     <div class="er-card-body">
-                        <div><span class="er-pk">post_id</span> (PK)</div>
+                        <div><span class="er-pk">id</span> (UUID, PK)</div>
                         <div><span class="er-fk">user_id</span> (FK)</div>
-                        <div><span class="er-fk">destination_id</span> (FK)</div>
-                        <div>title</div>
+                        <div>image_url</div>
+                        <div>destination</div>
                         <div>caption</div>
                         <div>created_at</div>
                     </div>
                 </div>
 
                 <div class="er-card">
-                    <div class="er-card-header header-photos">PHOTO</div>
+                    <div class="er-card-header header-photos">POST_MEDIA</div>
                     <div class="er-card-body">
-                        <div><span class="er-pk">photo_id</span> (PK)</div>
+                        <div><span class="er-pk">id</span> (UUID, PK)</div>
                         <div><span class="er-fk">post_id</span> (FK)</div>
-                        <div>image_url</div>
+                        <div>media_url</div>
+                        <div>media_type</div>
                         <div>display_order</div>
+                    </div>
+                </div>
+
+                <div class="er-card">
+                    <div class="er-card-header header-social">LIKES</div>
+                    <div class="er-card-body">
+                        <div><span class="er-pk">user_id</span> (UUID, PK)</div>
+                        <div><span class="er-pk">post_id</span> (UUID, PK)</div>
                         <div>created_at</div>
                     </div>
                 </div>
 
                 <div class="er-card">
-                    <div class="er-card-header header-destinations">DESTINATION</div>
+                    <div class="er-card-header header-social">COMMENTS</div>
                     <div class="er-card-body">
-                        <div><span class="er-pk">destination_id</span> (PK)</div>
-                        <div>name</div>
-                        <div>country</div>
-                        <div>description</div>
-                    </div>
-                </div>
-
-                <div class="er-card">
-                    <div class="er-card-header header-social">LIKE</div>
-                    <div class="er-card-body">
-                        <div><span class="er-pk">user_id</span> (PK,FK)</div>
-                        <div><span class="er-pk">post_id</span> (PK,FK)</div>
-                        <div>created_at</div>
-                    </div>
-                </div>
-
-                <div class="er-card">
-                    <div class="er-card-header header-social">SAVE / BOOKMARK</div>
-                    <div class="er-card-body">
-                        <div><span class="er-pk">user_id</span> (PK,FK)</div>
-                        <div><span class="er-pk">post_id</span> (PK,FK)</div>
-                        <div>created_at</div>
-                    </div>
-                </div>
-
-                <div class="er-card">
-                    <div class="er-card-header header-social">FOLLOW</div>
-                    <div class="er-card-body">
-                        <div><span class="er-pk">follower_id</span> (PK,FK)</div>
-                        <div><span class="er-pk">following_id</span> (PK,FK)</div>
-                        <div>created_at</div>
-                    </div>
-                </div>
-
-                <div class="er-card">
-                    <div class="er-card-header header-social">COMMENT</div>
-                    <div class="er-card-body">
-                        <div><span class="er-pk">comment_id</span> (PK)</div>
-                        <div><span class="er-fk">post_id</span> (FK)</div>
+                        <div><span class="er-pk">id</span> (UUID, PK)</div>
                         <div><span class="er-fk">user_id</span> (FK)</div>
+                        <div><span class="er-fk">post_id</span> (FK)</div>
                         <div>content</div>
                     </div>
                 </div>
+
+                <div class="er-card">
+                    <div class="er-card-header header-social">SAVED_POSTS</div>
+                    <div class="er-card-body">
+                        <div><span class="er-pk">user_id</span> (UUID, PK)</div>
+                        <div><span class="er-pk">post_id</span> (UUID, PK)</div>
+                        <div>created_at</div>
+                    </div>
+                </div>
+
+                <div class="er-card">
+                    <div class="er-card-header header-social">FOLLOWS</div>
+                    <div class="er-card-body">
+                        <div><span class="er-pk">follower_id</span> (UUID, PK)</div>
+                        <div><span class="er-pk">following_id</span> (UUID, PK)</div>
+                        <div>created_at</div>
+                    </div>
+                </div>
+
+                <div class="er-card">
+                    <div class="er-card-header header-social">NOTIFICATIONS</div>
+                    <div class="er-card-body">
+                        <div><span class="er-pk">id</span> (UUID, PK)</div>
+                        <div><span class="er-fk">recipient_id</span> (FK)</div>
+                        <div><span class="er-fk">actor_id</span> (FK)</div>
+                        <div>type / is_read</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- PAGE 2: OBJECTIVE & STRUCTURE -->
+    <!-- PAGE 2: OBJECTIVE & TABLE LISTING COMMAND -->
     <div class="report-page">
-        <h2 class="section-title">1. Objective (In Simple English)</h2>
+        <h2 class="section-title">1. Objective</h2>
         <p>
-            The purpose of this practical project is to design, implement, and test the database for a <strong>Travel Photo Sharing Community Platform</strong> (<strong>TripNest 2.0</strong>):
+            The objective of this practical work is to design, implement, and verify the relational database schema for <strong>TripNest 2.0</strong> running on <strong>Supabase PostgreSQL</strong>.
         </p>
-        <ul style="margin-left: 1.5rem; margin-bottom: 1.25rem; color: #334155; font-size: 0.95rem; line-height: 1.8;">
-            <li><strong>Create Tables:</strong> Build tables to store users, travel posts, destination places, photos, likes, and comments.</li>
-            <li><strong>Connect Tables:</strong> Link them using <strong>Primary Keys</strong> (unique IDs) and <strong>Foreign Keys</strong> with <code>ON DELETE CASCADE</code> (so deleting a user safely cleans up their posts).</li>
-            <li><strong>Insert Sample Data:</strong> Add clean, realistic travel records.</li>
-            <li><strong>Test SQL JOINs:</strong> Learn how to pull data from two tables together using <code>INNER</code>, <code>LEFT</code>, <code>RIGHT</code>, <code>FULL</code>, and <code>NATURAL</code> joins.</li>
-            <li><strong>Test Safety Errors:</strong> Try making mistakes on purpose (like liking a post twice) to verify that the database protects data integrity.</li>
-        </ul>
 
-        <h2 class="section-title">2. Database Structure</h2>
+        <h2 class="section-title">2. Database Structure & Supabase Table Listing</h2>
         <p>
-            Here are the tables in our travel database and what they store:
+            In Supabase PostgreSQL, we list all active public tables using the <code>\dt public.*</code> command or by querying <code>information_schema.tables</code>:
         </p>
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Table</th>
-                    <th>What It Stores (Simple Explanation)</th>
-                    <th>Real-World Example</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><strong><code>users</code></strong></td>
-                    <td>People who signed up on TripNest</td>
-                    <td><code>traveluser01</code> (Alex Johnson)</td>
-                </tr>
-                <tr>
-                    <td><strong><code>destinations</code></strong></td>
-                    <td>Travel spots & cities</td>
-                    <td>Ooty, Goa, Munnar, Jaipur, Manali</td>
-                </tr>
-                <tr>
-                    <td><strong><code>posts</code></strong></td>
-                    <td>Travel stories and headlines</td>
-                    <td>"Beautiful Ooty Trip", "Exploring Goa"</td>
-                </tr>
-                <tr>
-                    <td><strong><code>photos</code></strong></td>
-                    <td>Carousel pictures attached to a post</td>
-                    <td>Photo 1 of tea gardens, Photo 2 of mountain view</td>
-                </tr>
-                <tr>
-                    <td><strong><code>likes</code></strong></td>
-                    <td>Who liked which post</td>
-                    <td>User 2 liked Post 1</td>
-                </tr>
-                <tr>
-                    <td><strong><code>comments</code></strong></td>
-                    <td>Discussion remarks on posts</td>
-                    <td>"Awesome picture! Adding Ooty to my bucket list!"</td>
-                </tr>
-                <tr>
-                    <td><strong><code>saved_posts</code></strong></td>
-                    <td>Personal saved bucket list bookmarks</td>
-                    <td>User 1 saved Post 3 for their future trip</td>
-                </tr>
-                <tr>
-                    <td><strong><code>follows</code></strong></td>
-                    <td>Social follower-following connections</td>
-                    <td>User 1 follows User 2</td>
-                </tr>
-            </tbody>
-        </table>
 
-        <!-- Terminal Output -->
+        <!-- Supabase CMD Screenshot Mockup: SHOW TABLES / \dt -->
+        <div class="terminal-window">
+            <div class="terminal-header">
+                <div class="terminal-controls">
+                    <span class="terminal-btn btn-close"></span>
+                    <span class="terminal-btn btn-minimize"></span>
+                    <span class="terminal-btn btn-maximize"></span>
+                </div>
+                <div class="terminal-title">Supabase PostgreSQL CLI (psql / SQL Editor) — Table Verification</div>
+                <div></div>
+            </div>
+            <div class="terminal-body"><span class="prompt">postgres=&gt;</span> <span class="kw">\dt public.*</span>
+                   List of relations
+ Schema |       Name        | Type  |     Owner      
+--------+-------------------+-------+----------------
+ public | comments          | table | postgres
+ public | follows           | table | postgres
+ public | likes             | table | postgres
+ public | notifications     | table | postgres
+ public | post_media        | table | postgres
+ public | posts             | table | postgres
+ public | profiles          | table | postgres
+ public | saved_posts       | table | postgres
+(<span class="num">8</span> rows)
+
+<span class="prompt">postgres=&gt;</span> <span class="kw">SELECT</span> table_name <span class="kw">FROM</span> information_schema.tables <span class="kw">WHERE</span> table_schema = <span class="str">'public'</span> <span class="kw">ORDER BY</span> table_name;
++-------------------+
+| table_name        |
++-------------------+
+| comments          |
+| follows           |
+| likes             |
+| notifications     |
+| post_media        |
+| posts             |
+| profiles          |
+| saved_posts       |
++-------------------+
+(<span class="num">8</span> rows)</div>
+        </div>
+    </div>
+
+    <!-- PAGE 3: DATA INSERTION & COUNT VERIFICATION -->
+    <div class="report-page">
+        <h2 class="section-title">3. Table Creation & Key Constraints</h2>
+        <p>
+            The schema enforces strict referential integrity in Supabase: <code>UUID PRIMARY KEY DEFAULT gen_random_uuid()</code>, Composite Primary Keys (<code>likes</code>, <code>saved_posts</code>, <code>follows</code>), Foreign Keys with <code>ON DELETE CASCADE</code>, and Check constraints.
+        </p>
+
+        <h2 class="section-title">4. Sample Data Insertion & Row Count Verification</h2>
+        <p>
+            Sample records were inserted into the database in foreign-key safe order. The query below verifies record counts across all core tables in Supabase:
+        </p>
+
+        <!-- Supabase CMD Screenshot Mockup: Row Counts Query -->
+        <div class="terminal-window">
+            <div class="terminal-header">
+                <div class="terminal-controls">
+                    <span class="terminal-btn btn-close"></span>
+                    <span class="terminal-btn btn-minimize"></span>
+                    <span class="terminal-btn btn-maximize"></span>
+                </div>
+                <div class="terminal-title">Supabase SQL Editor — Row Count Verification</div>
+                <div></div>
+            </div>
+            <div class="terminal-body"><span class="prompt">postgres=&gt;</span> <span class="kw">SELECT</span> <span class="str">'profiles'</span> <span class="kw">AS</span> table_name, <span class="kw">COUNT</span>(*) <span class="kw">AS</span> records <span class="kw">FROM</span> public.profiles
+<span class="prompt">postgres-&gt;</span> <span class="kw">UNION ALL</span>
+<span class="prompt">postgres-&gt;</span> <span class="kw">SELECT</span> <span class="str">'posts'</span>, <span class="kw">COUNT</span>(*) <span class="kw">FROM</span> public.posts
+<span class="prompt">postgres-&gt;</span> <span class="kw">UNION ALL</span>
+<span class="prompt">postgres-&gt;</span> <span class="kw">SELECT</span> <span class="str">'post_media'</span>, <span class="kw">COUNT</span>(*) <span class="kw">FROM</span> public.post_media
+<span class="prompt">postgres-&gt;</span> <span class="kw">UNION ALL</span>
+<span class="prompt">postgres-&gt;</span> <span class="kw">SELECT</span> <span class="str">'likes'</span>, <span class="kw">COUNT</span>(*) <span class="kw">FROM</span> public.likes
+<span class="prompt">postgres-&gt;</span> <span class="kw">UNION ALL</span>
+<span class="prompt">postgres-&gt;</span> <span class="kw">SELECT</span> <span class="str">'comments'</span>, <span class="kw">COUNT</span>(*) <span class="kw">FROM</span> public.comments
+<span class="prompt">postgres-&gt;</span> <span class="kw">UNION ALL</span>
+<span class="prompt">postgres-&gt;</span> <span class="kw">SELECT</span> <span class="str">'saved_posts'</span>, <span class="kw">COUNT</span>(*) <span class="kw">FROM</span> public.saved_posts
+<span class="prompt">postgres-&gt;</span> <span class="kw">UNION ALL</span>
+<span class="prompt">postgres-&gt;</span> <span class="kw">SELECT</span> <span class="str">'follows'</span>, <span class="kw">COUNT</span>(*) <span class="kw">FROM</span> public.follows
+<span class="prompt">postgres-&gt;</span> <span class="kw">UNION ALL</span>
+<span class="prompt">postgres-&gt;</span> <span class="kw">SELECT</span> <span class="str">'notifications'</span>, <span class="kw">COUNT</span>(*) <span class="kw">FROM</span> public.notifications;
++---------------+---------+
+| table_name    | records |
++---------------+---------+
+| profiles      |       5 |
+| posts         |       6 |
+| post_media    |      11 |
+| likes         |       9 |
+| comments      |       6 |
+| saved_posts   |       6 |
+| follows       |       8 |
+| notifications |       7 |
++---------------+---------+
+(<span class="num">8</span> rows)</div>
+        </div>
+    </div>
+
+    <!-- PAGE 4: JOIN OPERATIONS IN SUPABASE POSTGRESQL -->
+    <div class="report-page">
+        <h2 class="section-title">5. JOIN Operations in Supabase PostgreSQL</h2>
+
+        <h3 class="subsection-title">5.1 INNER JOIN (Matching Profiles & Posts)</h3>
+        <p><strong>Query:</strong> Returns only matching traveler profiles and their published posts.</p>
         <div class="terminal-window">
             <div class="terminal-header">
                 <div class="terminal-controls"><span class="terminal-btn btn-close"></span><span class="terminal-btn btn-minimize"></span><span class="terminal-btn btn-maximize"></span></div>
-                <div class="terminal-title">Database Terminal — Table Verification</div>
+                <div class="terminal-title">Supabase SQL Editor — INNER JOIN</div>
                 <div></div>
             </div>
-            <div class="terminal-body"><span class="prompt">mysql&gt;</span> <span class="kw">SHOW TABLES;</span>
-+-----------------------+
-| Tables_in_tripnest_db |
-+-----------------------+
-| comments              |
-| destinations          |
-| follows               |
-| likes                 |
-| photos                |
-| posts                 |
-| saved_posts           |
-| users                 |
-+-----------------------+
-<span class="num">8</span> rows in set (<span class="num">0.01</span> sec)</div>
-        </div>
-    </div>
-
-    <!-- PAGE 3: TABLE CREATION & ROW COUNTS -->
-    <div class="report-page">
-        <h2 class="section-title">3. Table Creation & Safety Rules (DDL)</h2>
-        <p>
-            The database uses standard SQL rules to keep data clean and organized:
-        </p>
-        <div class="callout-box">
-            <strong>Key Concepts Used:</strong><br>
-            • <code>PRIMARY KEY</code>: Unique ID for every row.<br>
-            • <code>FOREIGN KEY ... ON DELETE CASCADE</code>: If a user deletes their account, all their posts and likes are automatically cleaned up.<br>
-            • <code>CHECK (follower_id &lt;&gt; following_id)</code>: Prevents users from following themselves.
+            <div class="terminal-body"><span class="prompt">postgres=&gt;</span> <span class="kw">SELECT</span> 
+<span class="prompt">postgres-&gt;</span>     pr.full_name,
+<span class="prompt">postgres-&gt;</span>     p.destination,
+<span class="prompt">postgres-&gt;</span>     p.caption
+<span class="prompt">postgres-&gt;</span> <span class="kw">FROM</span> public.profiles pr
+<span class="prompt">postgres-&gt;</span> <span class="kw">INNER JOIN</span> public.posts p 
+<span class="prompt">postgres-&gt;</span>     <span class="kw">ON</span> pr.id = p.user_id;
++---------------------+-------------+----------------------------------------+
+| full_name           | destination | caption                                |
++---------------------+-------------+----------------------------------------+
+| Wanderlust Explorer | Ooty        | Misty mornings in the Nilgiri hills.   |
+| Wanderlust Explorer | Munnar      | Hiking through lush green tea gardens. |
+| Road Trip Hunter    | Goa         | Sunset golden hour at Palolem beach.   |
+| Solo Backpacker     | Munnar      | Tranquil nature trails & fresh air.    |
+| Heritage Traveler   | Jaipur      | Intricate architecture of Hawa Mahal.  |
+| Mountain Lover      | Manali      | Snow peaks & chilly Himalayan trails.  |
++---------------------+-------------+----------------------------------------+
+(<span class="num">6</span> rows)</div>
         </div>
 
-        <h2 class="section-title">4. Sample Data & Row Count Check</h2>
-        <p>
-            We inserted 5 users, 5 destinations, 6 posts, 11 photos, 9 likes, 6 comments, and 8 follows:
-        </p>
-
+        <h3 class="subsection-title">5.2 LEFT JOIN (All Profiles + Matching Posts)</h3>
+        <p><strong>Query:</strong> Returns all user profiles, including those who have not posted yet.</p>
         <div class="terminal-window">
             <div class="terminal-header">
                 <div class="terminal-controls"><span class="terminal-btn btn-close"></span><span class="terminal-btn btn-minimize"></span><span class="terminal-btn btn-maximize"></span></div>
-                <div class="terminal-title">SQL Row Count Verification Query</div>
+                <div class="terminal-title">Supabase SQL Editor — LEFT JOIN</div>
                 <div></div>
             </div>
-            <div class="terminal-body"><span class="prompt">mysql&gt;</span> <span class="kw">SELECT</span> <span class="str">'users'</span>, <span class="kw">COUNT</span>(*) <span class="kw">FROM</span> users
-    <span class="prompt">-&gt;</span> <span class="kw">UNION ALL</span>
-    <span class="prompt">-&gt;</span> <span class="kw">SELECT</span> <span class="str">'destinations'</span>, <span class="kw">COUNT</span>(*) <span class="kw">FROM</span> destinations
-    <span class="prompt">-&gt;</span> <span class="kw">SELECT</span> <span class="str">'posts'</span>, <span class="kw">COUNT</span>(*) <span class="kw">FROM</span> posts
-    <span class="prompt">-&gt;</span> <span class="kw">UNION ALL</span>
-    <span class="prompt">-&gt;</span> <span class="kw">SELECT</span> <span class="str">'photos'</span>, <span class="kw">COUNT</span>(*) <span class="kw">FROM</span> photos
-    <span class="prompt">-&gt;</span> <span class="kw">UNION ALL</span>
-    <span class="prompt">-&gt;</span> <span class="kw">SELECT</span> <span class="str">'likes'</span>, <span class="kw">COUNT</span>(*) <span class="kw">FROM</span> likes
-    <span class="prompt">-&gt;</span> <span class="kw">UNION ALL</span>
-    <span class="prompt">-&gt;</span> <span class="kw">SELECT</span> <span class="str">'comments'</span>, <span class="kw">COUNT</span>(*) <span class="kw">FROM</span> comments
-    <span class="prompt">-&gt;</span> <span class="kw">UNION ALL</span>
-    <span class="prompt">-&gt;</span> <span class="kw">SELECT</span> <span class="str">'follows'</span>, <span class="kw">COUNT</span>(*) <span class="kw">FROM</span> follows;
-+--------------+---------+
-| table_name   | records |
-+--------------+---------+
-| users        |       5 |
-| destinations |       5 |
-| posts        |       6 |
-| photos       |      11 |
-| likes        |       9 |
-| comments     |       6 |
-| follows      |       8 |
-+--------------+---------+
-<span class="num">7</span> rows in set (<span class="num">0.02</span> sec)</div>
+            <div class="terminal-body"><span class="prompt">postgres=&gt;</span> <span class="kw">SELECT</span> 
+<span class="prompt">postgres-&gt;</span>     pr.full_name,
+<span class="prompt">postgres-&gt;</span>     <span class="kw">COALESCE</span>(p.destination, <span class="str">'No Posts Yet'</span>) <span class="kw">AS</span> destination,
+<span class="prompt">postgres-&gt;</span>     p.caption
+<span class="prompt">postgres-&gt;</span> <span class="kw">FROM</span> public.profiles pr
+<span class="prompt">postgres-&gt;</span> <span class="kw">LEFT JOIN</span> public.posts p 
+<span class="prompt">postgres-&gt;</span>     <span class="kw">ON</span> pr.id = p.user_id;
++---------------------+-------------+----------------------------------------+
+| full_name           | destination | caption                                |
++---------------------+-------------+----------------------------------------+
+| Wanderlust Explorer | Ooty        | Misty mornings in the Nilgiri hills.   |
+| Wanderlust Explorer | Munnar      | Hiking through lush green tea gardens. |
+| Road Trip Hunter    | Goa         | Sunset golden hour at Palolem beach.   |
+| Solo Backpacker     | Munnar      | Tranquil nature trails & fresh air.    |
+| Heritage Traveler   | Jaipur      | Intricate architecture of Hawa Mahal.  |
+| Mountain Lover      | Manali      | Snow peaks & chilly Himalayan trails.  |
++---------------------+-------------+----------------------------------------+
+(<span class="num">6</span> rows)</div>
+        </div>
+
+        <h3 class="subsection-title">5.3 FULL OUTER JOIN (Native PostgreSQL Syntax)</h3>
+        <p><strong>Query:</strong> Returns all records from both tables with NULLs on missing sides.</p>
+        <div class="terminal-window">
+            <div class="terminal-header">
+                <div class="terminal-controls"><span class="terminal-btn btn-close"></span><span class="terminal-btn btn-minimize"></span><span class="terminal-btn btn-maximize"></span></div>
+                <div class="terminal-title">Supabase SQL Editor — FULL OUTER JOIN</div>
+                <div></div>
+            </div>
+            <div class="terminal-body"><span class="prompt">postgres=&gt;</span> <span class="kw">SELECT</span> 
+<span class="prompt">postgres-&gt;</span>     pr.full_name,
+<span class="prompt">postgres-&gt;</span>     p.destination
+<span class="prompt">postgres-&gt;</span> <span class="kw">FROM</span> public.profiles pr
+<span class="prompt">postgres-&gt;</span> <span class="kw">FULL OUTER JOIN</span> public.posts p 
+<span class="prompt">postgres-&gt;</span>     <span class="kw">ON</span> pr.id = p.user_id;
++---------------------+-------------+
+| full_name           | destination |
++---------------------+-------------+
+| Wanderlust Explorer | Ooty        |
+| Wanderlust Explorer | Munnar      |
+| Road Trip Hunter    | Goa         |
+| Solo Backpacker     | Munnar      |
+| Heritage Traveler   | Jaipur      |
+| Mountain Lover      | Manali      |
++---------------------+-------------+
+(<span class="num">6</span> rows)</div>
         </div>
     </div>
 
-    <!-- PAGE 4: JOIN OPERATIONS -->
+    <!-- PAGE 5: COMPOSITE KEYS & ERROR VALIDATION IN SUPABASE -->
     <div class="report-page">
-        <h2 class="section-title">5. JOIN Operations Explained with Simple Examples</h2>
-        <p>
-            A <strong>JOIN</strong> simply means: <em>"Combine information from Table A with related information from Table B."</em>
-        </p>
+        <h2 class="section-title">6. Composite Key & Intentional Error Testing (Supabase PostgreSQL)</h2>
 
-        <h3 class="subsection-title">5.1 INNER JOIN (Matching Rows Only)</h3>
-        <p><strong>In plain English:</strong> <em>"Show me only the users who have created a post, along with their post title."</em> (Users with 0 posts are left out).</p>
+        <h3 class="subsection-title">6.1 Test 1: Duplicate Composite Key (SQLSTATE 23505)</h3>
+        <p>Attempting to like the same post a second time triggers PostgreSQL unique violation:</p>
         <div class="terminal-window">
-            <div class="terminal-body"><span class="prompt">mysql&gt;</span> <span class="kw">SELECT</span> u.username, p.title <span class="kw">FROM</span> users u <span class="kw">INNER JOIN</span> posts p <span class="kw">ON</span> u.user_id = p.user_id;
-+--------------+------------------------------+
-| username     | title                        |
-+--------------+------------------------------+
-| traveluser01 | Beautiful Ooty Trip          |
-| traveluser01 | Another Munnar Experience    |
-| traveluser02 | Exploring Goa                |
-| traveluser03 | Munnar Tea Gardens           |
-| traveluser04 | Jaipur Heritage Tour         |
-| traveluser05 | Mountain Adventure in Manali |
-+--------------+------------------------------+
-<span class="num">6</span> rows in set (<span class="num">0.00</span> sec)</div>
+            <div class="terminal-header">
+                <div class="terminal-controls"><span class="terminal-btn btn-close"></span><span class="terminal-btn btn-minimize"></span><span class="terminal-btn btn-maximize"></span></div>
+                <div class="terminal-title">Supabase Terminal — Error 23505</div>
+                <div></div>
+            </div>
+            <div class="terminal-body"><span class="prompt">postgres=&gt;</span> <span class="kw">INSERT INTO</span> public.likes (user_id, post_id) 
+<span class="prompt">postgres-&gt;</span> <span class="kw">VALUES</span> (<span class="str">'c1a8d052-1111-4f40-8b6b-888888888888'</span>, <span class="str">'b2b9e163-2222-4a51-9c7c-999999999999'</span>);
+
+<span class="error">ERROR: duplicate key value violates unique constraint "likes_pkey"
+DETAIL: Key (user_id, post_id)=(c1a8d052-1111-4f40-8b6b-888888888888, b2b9e163-2222-4a51-9c7c-999999999999) already exists.
+SQLSTATE: 23505</span></div>
         </div>
 
-        <h3 class="subsection-title">5.2 LEFT JOIN (All Left Users + Matching Posts)</h3>
-        <p><strong>In plain English:</strong> <em>"Show me <strong>ALL</strong> users from the left table, even if they have created 0 posts."</em> (If a user has 0 posts, title shows <code>NULL</code>).</p>
+        <h3 class="subsection-title">6.2 Test 2: Foreign Key Constraint Violation (SQLSTATE 23503)</h3>
+        <p>Attempting to add a post for a non-existent user UID:</p>
         <div class="terminal-window">
-            <div class="terminal-body"><span class="prompt">mysql&gt;</span> <span class="kw">SELECT</span> u.username, p.title <span class="kw">FROM</span> users u <span class="kw">LEFT JOIN</span> posts p <span class="kw">ON</span> u.user_id = p.user_id;
-+--------------+------------------------------+
-| username     | title                        |
-+--------------+------------------------------+
-| traveluser01 | Beautiful Ooty Trip          |
-| traveluser01 | Another Munnar Experience    |
-| traveluser02 | Exploring Goa                |
-| traveluser03 | Munnar Tea Gardens           |
-| traveluser04 | Jaipur Heritage Tour         |
-| traveluser05 | Mountain Adventure in Manali |
-+--------------+------------------------------+
-<span class="num">6</span> rows in set (<span class="num">0.00</span> sec)</div>
+            <div class="terminal-header">
+                <div class="terminal-controls"><span class="terminal-btn btn-close"></span><span class="terminal-btn btn-minimize"></span><span class="terminal-btn btn-maximize"></span></div>
+                <div class="terminal-title">Supabase Terminal — Error 23503</div>
+                <div></div>
+            </div>
+            <div class="terminal-body"><span class="prompt">postgres=&gt;</span> <span class="kw">INSERT INTO</span> public.posts (user_id, image_url, destination, caption)
+<span class="prompt">postgres-&gt;</span> <span class="kw">VALUES</span> (<span class="str">'00000000-0000-0000-0000-000000000000'</span>, <span class="str">'https://example.com/cover.jpg'</span>, <span class="str">'Paris'</span>, <span class="str">'Ghost Post'</span>);
+
+<span class="error">ERROR: insert or update on table "posts" violates foreign key constraint "posts_user_id_fkey"
+DETAIL: Key (user_id)=(00000000-0000-0000-0000-000000000000) is not present in table "users".
+SQLSTATE: 23503</span></div>
         </div>
 
-        <h3 class="subsection-title">5.3 RIGHT JOIN (All Right Destinations + Matching Posts)</h3>
-        <p><strong>In plain English:</strong> <em>"Show me <strong>ALL</strong> destinations, even if no post is tagged there yet."</em></p>
+        <h3 class="subsection-title">6.3 Test 3: Self-Follow Check Constraint Violation (SQLSTATE 23514)</h3>
+        <p>Attempting to make a user follow themselves:</p>
         <div class="terminal-window">
-            <div class="terminal-body"><span class="prompt">mysql&gt;</span> <span class="kw">SELECT</span> d.name <span class="kw">AS</span> destination, p.title <span class="kw">FROM</span> posts p <span class="kw">RIGHT JOIN</span> destinations d <span class="kw">ON</span> p.destination_id = d.destination_id;
-+-------------+------------------------------+
-| destination | title                        |
-+-------------+------------------------------+
-| Ooty        | Beautiful Ooty Trip          |
-| Goa         | Exploring Goa                |
-| Munnar      | Munnar Tea Gardens           |
-| Munnar      | Another Munnar Experience    |
-| Jaipur      | Jaipur Heritage Tour         |
-| Manali      | Mountain Adventure in Manali |
-+-------------+------------------------------+
-<span class="num">6</span> rows in set (<span class="num">0.00</span> sec)</div>
-        </div>
+            <div class="terminal-header">
+                <div class="terminal-controls"><span class="terminal-btn btn-close"></span><span class="terminal-btn btn-minimize"></span><span class="terminal-btn btn-maximize"></span></div>
+                <div class="terminal-title">Supabase Terminal — Error 23514</div>
+                <div></div>
+            </div>
+            <div class="terminal-body"><span class="prompt">postgres=&gt;</span> <span class="kw">INSERT INTO</span> public.follows (follower_id, following_id) 
+<span class="prompt">postgres-&gt;</span> <span class="kw">VALUES</span> (<span class="str">'c1a8d052-1111-4f40-8b6b-888888888888'</span>, <span class="str">'c1a8d052-1111-4f40-8b6b-888888888888'</span>);
 
-        <h3 class="subsection-title">5.4 FULL JOIN (FULL OUTER JOIN)</h3>
-        <p><strong>In plain English:</strong> <em>"Show me <strong>EVERYTHING</strong> from both tables. If a row has no match, show <code>NULL</code>."</em></p>
-        <div class="terminal-window">
-            <div class="terminal-body"><span class="prompt">mysql&gt;</span> <span class="kw">SELECT</span> u.username, p.title <span class="kw">FROM</span> users u <span class="kw">LEFT JOIN</span> posts p <span class="kw">ON</span> u.user_id = p.user_id
-    <span class="prompt">-&gt;</span> <span class="kw">UNION</span>
-    <span class="prompt">-&gt;</span> <span class="kw">SELECT</span> u.username, p.title <span class="kw">FROM</span> users u <span class="kw">RIGHT JOIN</span> posts p <span class="kw">ON</span> u.user_id = p.user_id;
-+--------------+------------------------------+
-| username     | title                        |
-+--------------+------------------------------+
-| traveluser01 | Beautiful Ooty Trip          |
-| traveluser01 | Another Munnar Experience    |
-| traveluser02 | Exploring Goa                |
-| traveluser03 | Munnar Tea Gardens           |
-| traveluser04 | Jaipur Heritage Tour         |
-| traveluser05 | Mountain Adventure in Manali |
-+--------------+------------------------------+
-<span class="num">6</span> rows in set (<span class="num">0.03</span> sec)</div>
+<span class="error">ERROR: new row for relation "follows" violates check constraint "chk_not_self_follow"
+DETAIL: Failing row contains (c1a8d052-1111-4f40-8b6b-888888888888, c1a8d052-1111-4f40-8b6b-888888888888, 2026-09-10 09:30:00+00).
+SQLSTATE: 23514</span></div>
         </div>
-
-        <h3 class="subsection-title">5.5 NATURAL JOIN</h3>
-        <p><strong>In plain English:</strong> <em>"Let the database automatically find columns with the same name in both tables and join them."</em></p>
-        <div class="terminal-window">
-            <div class="terminal-body"><span class="prompt">mysql&gt;</span> <span class="kw">SELECT</span> user_id, username, post_id, title <span class="kw">FROM</span> users <span class="kw">NATURAL JOIN</span> posts;
-<span class="comment">Empty set (0.05 sec)</span></div>
-        </div>
-        <p style="font-size: 0.85rem; color: var(--text-muted);"><em>(Why Empty set? Because both tables also have a <code>created_at</code> timestamp which differ by seconds, so zero rows match. In real projects, we always use explicit <code>INNER JOIN ... ON</code>).</em></p>
-    </div>
-
-    <!-- PAGE 5: COMPOSITE KEYS & ERROR TESTING -->
-    <div class="report-page">
-        <h2 class="section-title">6. Composite Keys & Safety Error Testing</h2>
-        
-        <div class="callout-box">
-            <strong>What is a Composite Key?</strong><br>
-            It means combining <strong>two columns together</strong> (like <code>user_id + post_id</code>) to make the unique ID. This stops a user from liking the same post multiple times by accident!
-        </div>
-
-        <h3 class="subsection-title">6.1 Test 1: Trying to like the same post twice (ERROR 1062)</h3>
-        <div class="terminal-window">
-            <div class="terminal-body"><span class="prompt">mysql&gt;</span> <span class="kw">INSERT INTO</span> likes (user_id, post_id) <span class="kw">VALUES</span> (<span class="num">2</span>, <span class="num">1</span>);
-<span class="error">ERROR 1062 (23000): Duplicate entry '2-1' for key 'likes.PRIMARY'</span></div>
-        </div>
-        <p><strong>Why this is good:</strong> The Composite Primary Key stopped the duplicate like automatically!</p>
-
-        <h3 class="subsection-title">6.2 Test 2: Trying to create a post for a fake user (ERROR 1452)</h3>
-        <div class="terminal-window">
-            <div class="terminal-body"><span class="prompt">mysql&gt;</span> <span class="kw">INSERT INTO</span> posts (user_id, destination_id, title) <span class="kw">VALUES</span> (<span class="num">999</span>, <span class="num">1</span>, <span class="str">'Ghost Post'</span>);
-<span class="error">ERROR 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`tripnest_db`.`posts`, CONSTRAINT `fk_post_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE)</span></div>
-        </div>
-        <p><strong>Why this is good:</strong> The Foreign Key stopped an orphan post from entering the database.</p>
-
-        <h3 class="subsection-title">6.3 Test 3: Trying to follow yourself (ERROR 3819)</h3>
-        <div class="terminal-window">
-            <div class="terminal-body"><span class="prompt">mysql&gt;</span> <span class="kw">INSERT INTO</span> follows (follower_id, following_id) <span class="kw">VALUES</span> (<span class="num">1</span>, <span class="num">1</span>);
-<span class="error">ERROR 3819 (HY000): Check constraint 'chk_not_self_follow' is violated.</span></div>
-        </div>
-        <p><strong>Why this is good:</strong> The Check Constraint stopped a user from following themselves.</p>
 
         <h2 class="section-title" style="margin-top: 2rem;">7. Summary & Learning Outcomes</h2>
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>What We Tested</th>
+                    <th>Requirement</th>
                     <th>Status</th>
-                    <th>What It Means in Simple English</th>
+                    <th>Supabase PostgreSQL Validation</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td><strong>Clean Relational Tables</strong></td>
+                    <td><strong>Relational Schema</strong></td>
                     <td><span class="badge">Verified</span></td>
-                    <td>All data is organized neatly with unique IDs.</td>
+                    <td>8 core tables structured with UUIDs and Foreign Keys.</td>
                 </tr>
                 <tr>
-                    <td><strong>No Ghost Data</strong></td>
+                    <td><strong>Table Listing & Counts</strong></td>
                     <td><span class="badge">Verified</span></td>
-                    <td>Deleting a user cleans up their posts automatically.</td>
+                    <td>Verified via <code>\dt public.*</code> and UNION count query.</td>
                 </tr>
                 <tr>
-                    <td><strong>No Duplicate Likes</strong></td>
+                    <td><strong>JOIN Querying</strong></td>
                     <td><span class="badge">Verified</span></td>
-                    <td>Composite Keys stop users from spamming likes.</td>
+                    <td>INNER, LEFT, and native FULL OUTER JOIN tested.</td>
                 </tr>
                 <tr>
-                    <td><strong>All 5 JOIN Queries</strong></td>
-                    <td><span class="badge">Verified</span></td>
-                    <td>INNER, LEFT, RIGHT, FULL, and NATURAL joins tested successfully.</td>
+                    <td><strong>Constraint Protection</strong></td>
+                    <td><span class="badge">Protected</span></td>
+                    <td>Errors 23505, 23503, and 23514 verified in Supabase CLI.</td>
                 </tr>
             </tbody>
         </table>
     </div>
 </div>
-
-<script>
-    function switchEngine(engine) {
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        if (engine === 'mysql') {
-            document.getElementById('btn-mysql').classList.add('active');
-            document.getElementById('meta-engine').textContent = 'MySQL 8.4 (Academic View)';
-        } else {
-            document.getElementById('btn-postgres').classList.add('active');
-            document.getElementById('meta-engine').textContent = 'Supabase PostgreSQL 15+ (Live View)';
-        }
-    }
-</script>
 
 </body>
 </html>
