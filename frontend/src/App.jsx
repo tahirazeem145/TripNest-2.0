@@ -14,6 +14,7 @@ import Settings from './pages/Settings';
 import TravelerProfile from './pages/TravelerProfile';
 import Destination from './pages/Destination';
 import PostDetail from './pages/PostDetail';
+import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -123,7 +124,7 @@ function App() {
 
           {/* Default redirect to /home or /login */}
           <Route path="/" element={<Navigate to="/home" replace />} />
-          <Route path="*" element={<Navigate to="/login" replace />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
     </AuthProvider>
