@@ -16,10 +16,12 @@ import Destination from './pages/Destination';
 import PostDetail from './pages/PostDetail';
 import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
+import OfflineBanner from './components/common/OfflineBanner';
 
 function App() {
   return (
     <AuthProvider>
+      <OfflineBanner />
       <Router>
         <Routes>
           {/* Public Auth Routes */}
