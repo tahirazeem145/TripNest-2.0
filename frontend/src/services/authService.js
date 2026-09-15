@@ -1,9 +1,6 @@
-/**
- * Authentication Service Layer
- * 
- * Executes REST API requests to the Spring Boot backend (/api/auth/*).
- */
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081/api';
+import config from '../config/env';
+
+const API_BASE_URL = config.apiBaseUrl;
 
 export const authService = {
   /**

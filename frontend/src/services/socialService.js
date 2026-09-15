@@ -1,9 +1,6 @@
-/**
- * Social API Service
- * 
- * Handles discovery feeds, real media upload, posts, likes, saves, comments, follows, notifications, and profiles.
- */
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081/api';
+import config from '../config/env';
+
+const API_BASE_URL = config.apiBaseUrl;
 
 export const socialService = {
   // Real Media Upload
