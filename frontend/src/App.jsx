@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import SmoothScroll from './components/common/SmoothScroll';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Home from './pages/Home';
@@ -23,7 +24,8 @@ function App() {
     <AuthProvider>
       <OfflineBanner />
       <Router>
-        <Routes>
+        <SmoothScroll>
+          <Routes>
           {/* Public Auth Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
@@ -128,6 +130,7 @@ function App() {
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </SmoothScroll>
       </Router>
     </AuthProvider>
   );
