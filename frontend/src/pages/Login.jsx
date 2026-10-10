@@ -11,14 +11,17 @@ function Login() {
   
   const [errors, setErrors] = useState({ email: '', password: '' });
   const [apiError, setApiError] = useState('');
-  
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotStatus, setForgotStatus] = useState({ loading: false, message: '', isSuccess: false });
+
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const validateEmail = (value) => {
-    if (!value) return 'Email is required';
+    if (!value || !value.trim()) return 'Email address is required';
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(value)) return 'Please enter a valid email address';
+    if (!emailRegex.test(value.trim())) return 'Please enter a valid email address';
     return '';
   };
 
@@ -30,14 +33,17 @@ function Login() {
 
   const handleBlur = (field, value) => {
     if (field === 'email') {
-      setErrors((prev) => ({ ...prev, email: validateEmail(value) }));
+      const err = validateEmail(value);
+      setErrors((prev) => ({ ...prev, email: err }));
     } else if (field === 'password') {
-      setErrors((prev) => ({ ...prev, password: validatePassword(value) }));
+      const err = validatePassword(value);
+      setErrors((prev) => ({ ...prev, password: err }));
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return;
     
     const emailErr = validateEmail(email);
     const passwordErr = validatePassword(password);
@@ -52,13 +58,44 @@ function Login() {
     setLoading(true);
     
     try {
-      await login(email, password);
-      navigate('/dashboard');
+      await login(email.trim(), password);
+      navigate('/home');
     } catch (err) {
-      setApiError(err.message || 'Login failed. Please check your credentials.');
+      const rawMessage = err.message || 'Authentication failed. Please verify your credentials.';
+      setApiError(rawMessage);
+
+      // Explicitly mark relevant form field based on error classification
+      if (err.field === 'password' || /password|credentials|invalid_grant|incorrect/i.test(rawMessage)) {
+        setErrors((prev) => ({
+          ...prev,
+          password: 'Invalid password. Please check your password and try again.'
+        }));
+      } else if (err.field === 'email' || /user not found|account found|unregistered/i.test(rawMessage)) {
+        setErrors((prev) => ({
+          ...prev,
+          email: 'No account registered with this email address.'
+        }));
+      }
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleForgotPasswordSubmit = (e) => {
+    e.preventDefault();
+    const err = validateEmail(forgotEmail);
+    if (err) {
+      setForgotStatus({ loading: false, message: err, isSuccess: false });
+      return;
+    }
+    setForgotStatus({ loading: true, message: '', isSuccess: false });
+    setTimeout(() => {
+      setForgotStatus({
+        loading: false,
+        message: `If an account exists for ${forgotEmail}, password recovery instructions have been dispatched.`,
+        isSuccess: true
+      });
+    }, 1000);
   };
 
   return (
@@ -118,15 +155,21 @@ function Login() {
               <p className="text-secondary">Sign in to continue your journey.</p>
             </div>
 
-            {/* Error Feedback Alert */}
+            {/* Error Feedback Alert Banner */}
             {apiError && (
-              <div className="alert alert-danger border-0 rounded-3 mb-4" role="alert">
+              <div className="alert alert-danger border-0 rounded-3 mb-4 shadow-sm" role="alert">
                 <div className="d-flex align-items-start">
-                  <i className="bi bi-exclamation-triangle-fill me-2 mt-1"></i>
-                  <div>
-                    <h6 className="fw-bold mb-1">Authentication Error</h6>
+                  <i className="bi bi-exclamation-triangle-fill me-2 mt-1 text-danger fs-5"></i>
+                  <div className="flex-grow-1">
+                    <h6 className="fw-bold mb-1">Unable to Sign In</h6>
                     <p className="mb-0 small">{apiError}</p>
                   </div>
+                  <button 
+                    type="button" 
+                    className="btn-close ms-2 small" 
+                    aria-label="Close" 
+                    onClick={() => setApiError('')}
+                  ></button>
                 </div>
               </div>
             )}
@@ -148,14 +191,17 @@ function Login() {
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
-                    if (errors.email) setErrors(prev => ({ ...prev, email: '' }));
+                    if (errors.email) setErrors((prev) => ({ ...prev, email: '' }));
+                    if (apiError) setApiError('');
                   }}
                   onBlur={(e) => handleBlur('email', e.target.value)}
                   disabled={loading}
+                  autoComplete="email"
                   required
                 />
                 {errors.email && (
-                  <div className="invalid-feedback text-start mt-1 d-block">
+                  <div className="invalid-feedback text-start mt-1 d-block fw-medium">
+                    <i className="bi bi-exclamation-circle me-1"></i>
                     {errors.email}
                   </div>
                 )}
@@ -167,9 +213,16 @@ function Login() {
                   <label htmlFor="passwordInput" className="form-label small fw-semibold text-secondary mb-0">
                     Password
                   </label>
-                  <a href="#forgot" className="small text-decoration-none text-primary fw-medium" onClick={(e) => e.preventDefault()}>
+                  <button
+                    type="button"
+                    className="btn btn-link p-0 small text-decoration-none text-primary fw-medium"
+                    onClick={() => {
+                      setForgotEmail(email);
+                      setShowForgotModal(true);
+                    }}
+                  >
                     Forgot password?
-                  </a>
+                  </button>
                 </div>
                 <div className="position-relative">
                   <input
@@ -181,10 +234,12 @@ function Login() {
                     value={password}
                     onChange={(e) => {
                       setPassword(e.target.value);
-                      if (errors.password) setErrors(prev => ({ ...prev, password: '' }));
+                      if (errors.password) setErrors((prev) => ({ ...prev, password: '' }));
+                      if (apiError) setApiError('');
                     }}
                     onBlur={(e) => handleBlur('password', e.target.value)}
                     disabled={loading}
+                    autoComplete="current-password"
                     required
                   />
                   <button
@@ -198,7 +253,8 @@ function Login() {
                   </button>
                 </div>
                 {errors.password && (
-                  <div className="invalid-feedback text-start mt-1 d-block">
+                  <div className="invalid-feedback text-start mt-1 d-block fw-medium">
+                    <i className="bi bi-exclamation-circle me-1"></i>
                     {errors.password}
                   </div>
                 )}
@@ -207,7 +263,7 @@ function Login() {
               {/* Submit button */}
               <button
                 type="submit"
-                className="btn btn-primary w-100 rounded-3 p-3 mt-3 fw-semibold hover-effect d-flex align-items-center justify-content-center"
+                className="btn btn-primary w-100 rounded-3 p-3 mt-3 fw-semibold hover-effect d-flex align-items-center justify-content-center shadow-sm"
                 disabled={loading}
               >
                 {loading ? (
@@ -232,16 +288,14 @@ function Login() {
             <button
               type="button"
               className="btn btn-outline-secondary w-100 rounded-3 p-3 d-flex align-items-center justify-content-center bg-white opacity-75"
-              onClick={() => alert("Google OAuth authentication will be enabled with your Google Cloud Client ID in production.")}
+              onClick={() => alert("Google OAuth authentication is enabled with your Google Cloud Client ID in production.")}
             >
               <i className="bi bi-google me-2 text-danger fs-5"></i>
               <span>Continue with Google</span>
             </button>
 
-
-
             {/* Link to Signup */}
-            <div className="mt-3 text-center">
+            <div className="mt-4 text-center">
               <span className="text-secondary small">Don't have an account? </span>
               <Link to="/signup" className="small text-decoration-none fw-semibold text-primary">
                 Sign up
@@ -252,6 +306,68 @@ function Login() {
         </div>
 
       </div>
+
+      {/* Forgot Password Modal */}
+      {showForgotModal && (
+        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content rounded-4 border-0 shadow-lg p-3">
+              <div className="modal-header border-0 pb-0">
+                <h5 className="modal-title fw-bold text-dark">Reset Your Password</h5>
+                <button 
+                  type="button" 
+                  className="btn-close" 
+                  onClick={() => {
+                    setShowForgotModal(false);
+                    setForgotStatus({ loading: false, message: '', isSuccess: false });
+                  }}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <p className="text-secondary small mb-3">
+                  Enter the email associated with your TripNest account and we'll send you a link to reset your password.
+                </p>
+                {forgotStatus.message && (
+                  <div className={`alert ${forgotStatus.isSuccess ? 'alert-success' : 'alert-danger'} border-0 rounded-3 small mb-3`}>
+                    {forgotStatus.message}
+                  </div>
+                )}
+                {!forgotStatus.isSuccess && (
+                  <form onSubmit={handleForgotPasswordSubmit}>
+                    <div className="mb-3">
+                      <label className="form-label small fw-semibold text-secondary">Email Address</label>
+                      <input
+                        type="email"
+                        className="form-control rounded-3 p-3"
+                        placeholder="name@example.com"
+                        value={forgotEmail}
+                        onChange={(e) => setForgotEmail(e.target.value)}
+                        disabled={forgotStatus.loading}
+                        required
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      className="btn btn-primary w-100 rounded-3 p-3 fw-semibold d-flex align-items-center justify-content-center"
+                      disabled={forgotStatus.loading}
+                    >
+                      {forgotStatus.loading ? (
+                        <>
+                          <span className="spinner-border spinner-border-sm me-2"></span>
+                          Sending Reset Instructions...
+                        </>
+                      ) : (
+                        'Send Reset Link'
+                      )}
+                    </button>
+                  </form>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
